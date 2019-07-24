@@ -1,0 +1,40 @@
+#!/bin/bash
+
+prj_name=$1
+app_type=$2
+port=3000
+if [ $app_type != "-s" ]
+then
+  port=$(( ((RANDOM<<15)|RANDOM) % 63001 + 2000 ))
+fi
+echo "hosting port for app: "$port
+cmd='CMD ["valgrind", "./myapp", '
+for (( i=3; i<"$#"+1; i++ ))
+do
+  cmd+='"'${!i}'"'
+  if [ $i -ne $# ]
+  then
+    cmd+=", "
+  fi
+done
+cmd+="]"
+mkdir -p "$prj_name/app/global-headers"
+mkdir -p "$prj_name/app/project/src"
+mkdir -p "$prj_name/app/project/headers"
+mkdir -p "$prj_name/app/project/test"
+cd "$1/"
+cp -rf ./../global-headers/* ./app/global-headers/
+cp -rf ./src/* ./app/project/src/
+cp -rf ./headers/* ./app/project/headers/
+cp -rf ./test/* ./app/project/test/
+echo -e 'FROM gcc-valgrind' >> Dockerfile
+echo -e 'COPY ./app /usr/src/myapp' >> Dockerfile
+echo -e 'WORKDIR /usr/src/myapp/project/src' >> Dockerfile
+echo -e 'RUN gcc -g -Wall -DTRACE -o myapp ./*' >> Dockerfile
+echo -e 'EXPOSE '$port':1500' >> Dockerfile
+echo -e $cmd >> Dockerfile
+sudo docker build -t my-gcc-app .
+rm -r "./app"
+rm Dockerfile
+sudo docker run -it --rm --name my-running-app -p $port:1500 my-gcc-app
+sudo docker system prune -f
