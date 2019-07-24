@@ -1,7 +1,5 @@
 # C
-Questo repository contiene vari progetti utili alla comprensione del
-linguaggio C. Ogni sotto cartella rappresenta un progetto a se stante.
-Per l'utilizzo e il test dei sorgenti è stata configurata un'apposita immagine docker
+Questo repository contiene vari progetti relativi ai laboratori del corso: *Programmazione distribuita I (2018/2019)* tenuto presso il (https://www.polito.it/)[Politecnico di Torino]. Ogni sotto cartella rappresenta un progetto a se stante. Per l'utilizzo e il test dei sorgenti è stata configurata un'apposita immagine docker
 
 ## Struttura di un progetto
 Per inizializzare un nuovo progetto creare all'interno della cartella del ropository una nuova directory, di conseguenza creare 
@@ -17,9 +15,17 @@ in C++
 
 ## Installazione con Docker 
 Per poter utilizzare l'applicazione occore seguire i seguenti passaggi:
-1. Installare Docker CE se non precedentemente fatto
+1. Installare (https://docs.docker.com/install/linux/docker-ce/ubuntu/)[Docker CE] se non precedentemente fatto
 2. Posizionarsi nella cartella C 
 3. Eseguire uno dei seguenti comandi:
 	1. Per lanciare un server: ./app-dock `<project-name> -s <param1> <param2> ... <paramN>`
 	2. Per lanciare un client: ./app-dock `<project-name> -c <param1> <param2> ... <paramN>`
 > **NB:** lo script contiene comandi `sudo` quindi va eseguito su macchina Linux
+
+## Configurazione di rete
+Ogni applicativo risiede all'interno di un container che espone la porta 1500. Il binding della porta lato host viene fatto in due modi
+differenti a seconda che l'applicativo ospiti un client o un server. Se l'applicazione ospita un server il binding viene effettuato sulla
+porta 3000, non è possibile quindi al momento avere diversi server che lavorano in parallelo. Per quanto riguarda invece un client la porta
+di binding viene scelta in maniera random, questa infatti non ha bisogno di essere nota a priori in quanto le connessioni vengono aperte dai
+client. In definitiva un applicativo client per contattare un server dovrà specificare due parametri: `<server address> 3000`
+> **NB:** se si adopera docker su macchina linux i container sono raggiungibili tramite l'indirizzo di localhost: `127.0.0.1` 
