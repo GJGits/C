@@ -46,8 +46,10 @@ void parsePort(const char *port, uint16_t *uPort) {
 	// check if valid port
 	long longPort = strtol(port, (char **)NULL, 10);
 	*uPort = !(longPort >= 1 && longPort <= 65535) ? 0 : (uint16_t) longPort; 
-	if(*uPort == 0)
-        err_quit("Invalid port number");
+	if(*uPort == 0) {
+		printf("Port: " ANSI_COLOR_RED "INVALID PORT" ANSI_COLOR_RESET "\n");
+		err_quit("");
+	}
 	printf("Port: " ANSI_COLOR_GREEN "%d" ANSI_COLOR_RESET "\n", *uPort);
 }
 
