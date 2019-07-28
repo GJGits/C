@@ -55,7 +55,7 @@ ssize_t Recv (int fd, void *bufptr, size_t nbytes, int flags);
 
 ssize_t Recvfrom (int fd, void *bufptr, size_t nbytes, int flags, SA *sa, socklen_t *salenptr);
 
-void Sendto (int fd, void *bufptr, size_t nbytes, int flags, const SA *sa, socklen_t salen);
+ssize_t Sendto (int fd, void *bufptr, size_t nbytes, int flags, const SA *sa, socklen_t salen);
 
 void Send (int fd, void *bufptr, size_t nbytes, int flags);
 

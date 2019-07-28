@@ -171,10 +171,13 @@ ssize_t Recvfrom (int fd, void *bufptr, size_t nbytes, int flags, SA *sa, sockle
 	return n;
 }
 
-void Sendto (int fd, void *bufptr, size_t nbytes, int flags, const SA *sa, socklen_t salen)
-{
-	if (sendto(fd,bufptr,nbytes,flags,sa,salen) != (ssize_t)nbytes)
+ssize_t Sendto (int fd, void *bufptr, size_t nbytes, int flags, const SA *sa, socklen_t salen)
+{	
+	ssize_t sent = 0;
+	sent = sendto(fd,bufptr,nbytes,flags,sa,salen);
+	if ( sent != (ssize_t)nbytes)
 		err_sys ("(%s) error - sendto() failed", prog_name);
+	return sent;
 }
 
 void Send (int fd, void *bufptr, size_t nbytes, int flags)

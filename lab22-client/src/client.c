@@ -5,6 +5,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include<time.h>
+#include <inttypes.h>
 
 #include "../../global-headers/sockwrap.h"
 #include "../../global-headers/errlib.h"
@@ -13,11 +14,8 @@ char *prog_name; // per evitare errori di compilazione
 
 int main(int argc, char const *argv[])
 {
-    // clear console (Linux only)
-    printf("\e[1;1H\e[2J");
     uint16_t port;
-    // client_address richiesto solo per configurazione docker
-    struct sockaddr_in server_address, client_address; 
+    struct sockaddr_in server_address;
     int sockfd;
 
     memset(&server_address, 0, sizeof(server_address)); 
@@ -33,26 +31,15 @@ int main(int argc, char const *argv[])
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);
 
-    memset(&client_address, 0, sizeof(client_address));
-    client_address.sin_family = AF_INET;
-    client_address.sin_addr.s_addr = htonl(INADDR_ANY);
-    client_address.sin_port = htons(3000);
-
-    if (bind(sockfd, (struct sockaddr *) &client_address, sizeof(client_address)) < 0) {
-        perror("bind");
-        exit(1);
-    }
-
     ssize_t bytes_sent = 0;
-    ssize_t bytes_recv = 0;
-    socklen_t addr_len = 0;
+    socklen_t addr_len = sizeof(struct sockaddr_in);
     uint32_t send_buf = htonl(time(NULL));
 
-    Sendto(sockfd, &send_buf, sizeof(send_buf), 
-        MSG_CONFIRM, (const struct sockaddr*) &server_address, 
-        sizeof(server_address));
+    bytes_sent = Sendto(sockfd, &send_buf, sizeof(send_buf), 
+        0, (const struct sockaddr*) &server_address, 
+        addr_len);
     
-    printf("Datagram[sending]: " ANSI_COLOR_GREEN "%hu" ANSI_COLOR_RESET "\n", send_buf);
+    printf("Datagram[sending]: " ANSI_COLOR_GREEN "[%d] (%d bytes)" ANSI_COLOR_RESET "\n", (int) ntohl(send_buf), (int) bytes_sent);
     struct timeval tout;
     tout.tv_sec = 5;
     tout.tv_usec = 0;
@@ -68,14 +55,12 @@ int main(int argc, char const *argv[])
         socklen_t addr_len = 0;
         bytes_recv =  Recvfrom(sockfd, 
             &recv_buffer, sizeof(recv_buffer), 
-            MSG_WAITALL, (struct sockaddr *)&server_address, 
+            0, (struct sockaddr *)&server_address, 
             &addr_len);
-
-        if (bytes_recv != 64) {
-            printf("Datagram[receiving]: " ANSI_COLOR_RED "INVALID DATAGRAM\n" ANSI_COLOR_RESET "\n");
+        if (bytes_recv != 8) {
+            printf("Datagram[receiving]: " ANSI_COLOR_RED "INVALID DATAGRAM (%d bytes)\n" ANSI_COLOR_RESET, (int) bytes_recv);
         } else {
-            printf("Datagram[receiving]: " ANSI_COLOR_GREEN "%d %d\n" ANSI_COLOR_RESET "\n", 
-                recv_buffer[0], recv_buffer[1]);
+            printf("Datagram[receiving]: " ANSI_COLOR_CYAN "[%d][%d] (%d bytes)" ANSI_COLOR_RESET "\n", (int) ntohl(recv_buffer[0]), (int) ntohl(recv_buffer[1]), (int) bytes_recv);
         }
     } else {
             printf("Datagram[receiving]: " ANSI_COLOR_RED "TIME OUT\n" ANSI_COLOR_RESET "\n");

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+prj_name=$1
+app_type=$2
+port=3000
+if [ $app_type != "-s" ]
+then
+  port=$(( ((RANDOM<<15)|RANDOM) % 63001 + 2000 ))
+fi
+echo "hosting port for app: "$port
+mkdir -p "$prj_name/app/global-headers"
+mkdir -p "$prj_name/app/project/src"
+mkdir -p "$prj_name/app/project/headers"
+mkdir -p "$prj_name/app/project/test"
+cd "$1/"
+cp -rf ./../global-headers/* ./app/global-headers/
+cp -rf ./src/* ./app/project/src/
+cp -rf ./headers/* ./app/project/headers/
+cp -rf ./test/* ./app/project/test/
+gcc -g -Wall -DTRACE -o myapp ./*
+rm -r "./app"
+

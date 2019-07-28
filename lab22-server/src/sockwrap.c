@@ -48,7 +48,7 @@ void parsePort(const char *port, uint16_t *uPort) {
 	*uPort = !(longPort >= 1 && longPort <= 65535) ? 0 : (uint16_t) longPort; 
 	if(*uPort == 0)
         err_quit("Invalid port number");
-	printf("Port: " ANSI_COLOR_GREEN "%d" ANSI_COLOR_RESET "\n", *uPort);
+	printf("Server[port]: " ANSI_COLOR_GREEN "%d" ANSI_COLOR_RESET "\n", *uPort);
 }
 
 /**
@@ -61,7 +61,7 @@ void bindToAny(int sockfd, uint16_t port) {
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr.sin_port = htons(port);
 	Bind(sockfd, (struct sockaddr*) &addr, sizeof(addr));
-	printf("Binding: " ANSI_COLOR_GREEN "ANY ADDRESS" ANSI_COLOR_RESET "\n");
+	printf("Server[binding]: " ANSI_COLOR_GREEN "ANY ADDRESS" ANSI_COLOR_RESET "\n");
 }
 
 /* FINE FUNZIONI DI MIA IMPLEMENTAZIONE */
@@ -169,10 +169,12 @@ ssize_t Recvfrom (int fd, void *bufptr, size_t nbytes, int flags, SA *sa, sockle
 	return n;
 }
 
-void Sendto (int fd, void *bufptr, size_t nbytes, int flags, const SA *sa, socklen_t salen)
+ssize_t Sendto (int fd, void *bufptr, size_t nbytes, int flags, const SA *sa, socklen_t salen)
 {
-	if (sendto(fd,bufptr,nbytes,flags,sa,salen) != (ssize_t)nbytes)
+	ssize_t sent = sendto(fd,bufptr,nbytes,flags,sa,salen);
+	if (sent != (ssize_t)nbytes)
 		err_sys ("(%s) error - sendto() failed", prog_name);
+	return sent;
 }
 
 void Send (int fd, void *bufptr, size_t nbytes, int flags)
