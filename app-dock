@@ -24,11 +24,13 @@ mkdir -p "$prj_name/app/global-headers"
 mkdir -p "$prj_name/app/project/src"
 mkdir -p "$prj_name/app/project/headers"
 mkdir -p "$prj_name/app/project/test"
+mkdir -p "$prj_name/app/project/local-storage"
 cd "$1/"
 cp -rf ./../global-headers/* ./app/global-headers/
 cp -rf ./src/* ./app/project/src/
 cp -rf ./headers/* ./app/project/headers/
 cp -rf ./test/* ./app/project/test/
+cp -rf ./local-storage/* ./app/project/local-storage/
 echo -e 'FROM gcc-valgrind' >> Dockerfile
 echo -e 'COPY ./app /usr/src/myapp' >> Dockerfile
 echo -e 'WORKDIR /usr/src/myapp/project/src' >> Dockerfile
