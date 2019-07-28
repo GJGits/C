@@ -1,6 +1,14 @@
 # C
 Questo repository contiene vari progetti relativi ai laboratori del corso: *Programmazione distribuita I (2018/2019)* tenuto presso il [Politecnico di Torino](https://www.polito.it/). Ogni sotto cartella rappresenta un progetto a se stante. Per l'utilizzo e il test dei sorgenti è stata configurata un'apposita immagine docker
 
+## Creazione di un progetto
+Per creare un progetto in maniera automatica è possibile utilizzare lo script `crapp` presente all'interno del repository. Per utilizzarlo:
+1. Posizionarsi nella cartella C 
+2. Eseguire uno dei seguenti comandi:
+	1. Per creare un applicativo server: ./crapp `<project-name> -s`
+	2. Per creare un applicativo client: ./crapp `<project-name> -c`
+> **NB:** lo script contiene comandi `sudo` quindi va eseguito su macchina Linux, assicurarsi che il file abbia i permessi `rwx`
+
 ## Struttura di un progetto
 Per inizializzare un nuovo progetto creare all'interno della cartella del ropository una nuova directory, di conseguenza creare 
 al suo interno le seguenti subdirectory:
@@ -12,6 +20,8 @@ prevede solamente file con estensione `.h` di conseguenza non contiene al suo in
 file di libreria in esso presenti copiare i file con estensione `.c` all'interno della cartella `src` di cui sopra.
 * **test:** cartella per ora inutilizzata, tenuta per avere una struttura dei progetti estensibile e simile a quella utilizza per i progetti
 in C++ 
+* **local-storage:** cartella che rappresenta un local storage per l'applicativo, qui vanno inseriti eventuali file di configurazione e file
+necessari per il funzionamento dell'applicazione che non siano sorgenti.
 
 ## Utilizzare app con Docker 
 Per poter utilizzare l'applicazione con docker occore seguire i seguenti passaggi:
@@ -20,7 +30,7 @@ Per poter utilizzare l'applicazione con docker occore seguire i seguenti passagg
 3. Eseguire uno dei seguenti comandi:
 	1. Per lanciare un server: ./app-dock `<project-name> -s <param1> <param2> ... <paramN>`
 	2. Per lanciare un client: ./app-dock `<project-name> -c <param1> <param2> ... <paramN>`
-> **NB:** lo script contiene comandi `sudo` quindi va eseguito su macchina Linux
+> **NB:** lo script contiene comandi `sudo` quindi va eseguito su macchina Linux, assicurarsi che il file abbia i permessi `rwx`
 
 ## Configurazione di rete
 Ogni applicativo risiede all'interno di un container che espone la porta 1500. Il binding della porta lato host viene fatto in due modi
@@ -37,4 +47,4 @@ Per poter utilizzare l'applicazione in locale occore seguire i seguenti passaggi
 3. Eseguire uno dei seguenti comandi:
 	1. Per lanciare un server: ./app-local `<project-name> -s <param1> <param2> ... <paramN>`
 	2. Per lanciare un client: ./app-local `<project-name> -c <param1> <param2> ... <paramN>`
-> **NB:** lo script contiene comandi `sudo` quindi va eseguito su macchina Linux
+> **NB:** lo script contiene comandi `sudo` quindi va eseguito su macchina Linux, assicurarsi che il file abbia i permessi `rwx`
