@@ -13,8 +13,8 @@ file di libreria in esso presenti copiare i file con estensione `.c` all'interno
 * **test:** cartella per ora inutilizzata, tenuta per avere una struttura dei progetti estensibile e simile a quella utilizza per i progetti
 in C++ 
 
-## Installazione con Docker 
-Per poter utilizzare l'applicazione occore seguire i seguenti passaggi:
+## Utilizzare app con Docker 
+Per poter utilizzare l'applicazione con docker occore seguire i seguenti passaggi:
 1. Installare [Docker CE](https://docs.docker.com/install/linux/docker-ce/ubuntu/) se non precedentemente fatto
 2. Posizionarsi nella cartella C 
 3. Eseguire uno dei seguenti comandi:
@@ -29,3 +29,12 @@ porta 3000, non è possibile quindi al momento avere diversi server che lavorano
 di binding viene scelta in maniera random, questa infatti non ha bisogno di essere nota a priori in quanto le connessioni vengono aperte dai
 client. In definitiva un applicativo client per contattare un server dovrà specificare due parametri: `<server address> 3000`
 > **NB:** se si adopera docker su macchina linux i container sono raggiungibili tramite l'indirizzo di localhost: `127.0.0.1` 
+
+## Utilizzare app in locale
+Per poter utilizzare l'applicazione in locale occore seguire i seguenti passaggi:
+1. Installare `gcc` 
+2. Posizionarsi nella cartella C
+3. Eseguire uno dei seguenti comandi:
+	1. Per lanciare un server: ./app-local `<project-name> -s <param1> <param2> ... <paramN>`
+	2. Per lanciare un client: ./app-local `<project-name> -c <param1> <param2> ... <paramN>`
+> **NB:** lo script contiene comandi `sudo` quindi va eseguito su macchina Linux
