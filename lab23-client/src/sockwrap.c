@@ -25,11 +25,46 @@
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h> // SCNu16
+#include <ctype.h>
 
 #include "../../global-headers/errlib.h"
 #include "../../global-headers/sockwrap.h"
 
 extern char *prog_name;
+
+/**
+ * Restituisce la porta sotto forma di unsigned int,
+ * 0 in caso di errore
+ */
+void parsePort(const char *port, uint16_t *uPort) {
+	// check if isdigit
+	int lenght = strlen(port);
+	for (int i = 0; i < lenght; i++) {
+		if (!isdigit(port[i]))
+			uPort = 0;
+	}
+	// check if valid port
+	long longPort = strtol(port, (char **)NULL, 10);
+	*uPort = !(longPort >= 1 && longPort <= 65535) ? 0 : (uint16_t) longPort; 
+	if(*uPort == 0)
+        err_quit("Invalid port number");
+	printf("Server[port]: " ANSI_COLOR_GREEN "%d" ANSI_COLOR_RESET "\n", *uPort);
+}
+
+/**
+ * Effettua un binding su tutte le interfacce di rete:
+ * Indirizzo = 0.0.0.0
+ */
+void bindToAny(int sockfd, uint16_t port) {
+	struct sockaddr_in addr;
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr.sin_port = htons(port);
+	Bind(sockfd, (struct sockaddr*) &addr, sizeof(addr));
+	printf("Server[binding]: " ANSI_COLOR_GREEN "ANY ADDRESS" ANSI_COLOR_RESET "\n");
+}
+
+/* FINE FUNZIONI DI MIA IMPLEMENTAZIONE */
 
 int Socket (int family, int type, int protocol)
 {
@@ -134,10 +169,12 @@ ssize_t Recvfrom (int fd, void *bufptr, size_t nbytes, int flags, SA *sa, sockle
 	return n;
 }
 
-void Sendto (int fd, void *bufptr, size_t nbytes, int flags, const SA *sa, socklen_t salen)
-{
-	if (sendto(fd,bufptr,nbytes,flags,sa,salen) != (ssize_t)nbytes)
+ssize_t Sendto (int fd, void *bufptr, size_t nbytes, int flags, const SA *sa, socklen_t salen)
+{	
+	ssize_t sent = sendto(fd,bufptr,nbytes,flags,sa,salen); 
+	if (sent != (ssize_t)nbytes)
 		err_sys ("(%s) error - sendto() failed", prog_name);
+	return sent;
 }
 
 void Send (int fd, void *bufptr, size_t nbytes, int flags)

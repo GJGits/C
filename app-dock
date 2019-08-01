@@ -10,7 +10,7 @@ then
   port=$(( ((RANDOM<<15)|RANDOM) % 63001 + 2000 ))
 fi
 echo "hosting port for app: "$port
-cmd='CMD ["valgrind", "./myapp", '
+cmd='CMD ["valgrind", "--leak-check=full", "--show-leak-kinds=all", "./myapp", '
 for (( i=3; i<"$#"+1; i++ ))
 do
   cmd+='"'${!i}'"'

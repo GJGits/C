@@ -25,11 +25,48 @@
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h> // SCNu16
+#include <ctype.h>
 
 #include "../../global-headers/errlib.h"
 #include "../../global-headers/sockwrap.h"
 
 extern char *prog_name;
+
+/**
+ * Restituisce la porta sotto forma di unsigned int,
+ * 0 in caso di errore
+ */
+void parsePort(const char *port, uint16_t *uPort) {
+	// check if isdigit
+	int lenght = strlen(port);
+	for (int i = 0; i < lenght; i++) {
+		if (!isdigit(port[i]))
+			uPort = 0;
+	}
+	// check if valid port
+	long longPort = strtol(port, (char **)NULL, 10);
+	*uPort = !(longPort >= 1 && longPort <= 65535) ? 0 : (uint16_t) longPort; 
+	if(*uPort == 0)
+        err_quit("Invalid port number");
+	printf("Server[port]: " ANSI_COLOR_GREEN "%d" ANSI_COLOR_RESET "\n", *uPort);
+}
+
+/**
+ * Effettua un binding su tutte le interfacce di rete:
+ * Indirizzo = 0.0.0.0
+ */
+void bindToAny(int sockfd, uint16_t port) {
+	struct sockaddr_in addr;
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr.sin_port = htons(port);
+	Bind(sockfd, (struct sockaddr*) &addr, sizeof(addr));
+	printf("Server[binding]: " ANSI_COLOR_GREEN "ANY ADDRESS" ANSI_COLOR_RESET "\n");
+}
+
+/* FINE FUNZIONI DI MIA IMPLEMENTAZIONE */
+
+
 
 int Socket (int family, int type, int protocol)
 {
@@ -50,8 +87,11 @@ void Listen (int sockfd, int backlog)
 	char *ptr;
 	if ( (ptr = getenv("LISTENQ")) != NULL)
 		backlog = atoi(ptr);
-	if ( listen(sockfd,backlog) < 0 )
-		err_sys ("(%s) error - listen() failed", prog_name);
+	if ( listen(sockfd,backlog) < 0 ) {
+		printf("Server[error]: " ANSI_COLOR_RED "LISTEN FAILED!" ANSI_COLOR_RESET "\n");
+		err_sys ("", prog_name);
+	}
+		
 }
 
 
@@ -67,8 +107,10 @@ again:
 			errno == ENOBUFS || errno == ENOMEM			
 		    )
 			goto again;
-		else
-			err_sys ("(%s) error - accept() failed", prog_name);
+		else {
+			printf("Server[error]: " ANSI_COLOR_RED "ACCEPT FAILED!" ANSI_COLOR_RESET "\n");
+			err_sys ("", prog_name);
+		}
 	}
 	return n;
 }
@@ -134,10 +176,12 @@ ssize_t Recvfrom (int fd, void *bufptr, size_t nbytes, int flags, SA *sa, sockle
 	return n;
 }
 
-void Sendto (int fd, void *bufptr, size_t nbytes, int flags, const SA *sa, socklen_t salen)
-{
-	if (sendto(fd,bufptr,nbytes,flags,sa,salen) != (ssize_t)nbytes)
+ssize_t Sendto (int fd, void *bufptr, size_t nbytes, int flags, const SA *sa, socklen_t salen)
+{	
+	ssize_t sent = sendto(fd,bufptr,nbytes,flags,sa,salen);
+	if (sent != (ssize_t)nbytes)
 		err_sys ("(%s) error - sendto() failed", prog_name);
+	return sent;
 }
 
 void Send (int fd, void *bufptr, size_t nbytes, int flags)
@@ -453,8 +497,11 @@ again:
 	{
 		if (INTERRUPTED_BY_SIGNAL)
 			goto again;
-		else
-			err_sys ("(%s) error - select() failed", prog_name);
+		else {
+			printf("App[error]: " ANSI_COLOR_RED "SELECT FAILED!" ANSI_COLOR_RESET "\n");
+			err_sys ("", prog_name);
+		}
+			
 	}
 	return n;
 }

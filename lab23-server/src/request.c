@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -7,6 +8,7 @@
 #include "../headers/request.h"
 
 #define REQUEST_INITIAL_SIZE 30
+#define FILE_PATH "../local-storage/"
 
 void processRequest(int connSock) {
 
@@ -17,41 +19,70 @@ void processRequest(int connSock) {
     tval.tv_sec = 15;
     tval.tv_usec = 0;
 
-    while (select(FD_SETSIZE, &cset, NULL, NULL, &tval) == 1) {
+    while (Select(FD_SETSIZE, &cset, NULL, NULL, &tval) == 1) {
         
-        char *fileName;
-        char request[REQUEST_INITIAL_SIZE]; 
+        char *request = (char *)calloc(REQUEST_INITIAL_SIZE, sizeof(char)); 
+        char *errorMessage = "-ERR\r\n";
         
-        readRequest(connSock, request);
-        extractFileName(request, fileName);
+        if (readRequest(connSock, request) == 0) {
 
-        if(checkFile(fileName)) {
+            ssize_t fileLen = strlen(FILE_PATH) + strlen(request) - 5;
+            char *fileName = (char *) calloc(fileLen, sizeof(char));
+            memcpy(fileName, FILE_PATH, strlen(FILE_PATH));
+            if(extractFileName(request, fileName) == 0) {
 
+                if(checkFile(fileName) == 0) {
+
+                    printf("Server[sending]: " ANSI_COLOR_CYAN "STARTED SENDING OF %s" ANSI_COLOR_RESET "\n", fileName);
+                    free(request);
+                    char *okMessage = "+OK\r\n";
+                    send(connSock, okMessage, 5, 0);
+                    sendFile(connSock, fileName);
+                    printf("Server[sending]: " ANSI_COLOR_CYAN "SENT %s" ANSI_COLOR_RESET "\n", fileName);
+                    free(fileName);
+
+                } else {
+                    printf("Server[error]: " ANSI_COLOR_RED "FILE %s DOES NOT EXIST!" ANSI_COLOR_RESET "\n", fileName);
+                    free(request);
+                    free(fileName);
+                    if(send(connSock, errorMessage, strlen(errorMessage), MSG_NOSIGNAL) == -1)
+                        return;
+                }
+                    
+
+            } else {
+                printf("Server[error]: " ANSI_COLOR_RED "CANNOT EXTRACT FILE NAME FROM REQUEST (%s)" ANSI_COLOR_RESET "\n", request);
+                free(request);
+                if(send(connSock, errorMessage, strlen(errorMessage), MSG_NOSIGNAL) == -1)
+                    return;
+            }
+                
+
+        } else  {
+            printf("Server[error]: " ANSI_COLOR_RED "WRONG REQUEST (%s)" ANSI_COLOR_RESET "\n", request);
             free(request);
-            char *okMessage = "+OK\r\n";
-            send(connSock, okMessage, 5, 0);
-            sendFile(connSock, fileName);
-
+            if(send(connSock, errorMessage, strlen(errorMessage), MSG_NOSIGNAL) == -1)
+                return;
         }
+            
 
     }
     
 
 }
 
-/** 
- * C substring function definition. Il parametro p
- * rappresenta la posizione iniziale (si conta a partire da 1),
- * il parametro l invece rappresenta la lunghezza della substring
+/**
+ * Verifica che nella richiesta siano presenti i
+ * caretteri di ritorno che contraddistinguono il
+ * termina della richiesta stessa. Ritorna 0 se
+ * i caratteri sono presenti, -1 viceversa.
  */
-void substring(char s[], char sub[], int p, int l) {
-   int c = 0;
-   
-   while (c < l) {
-      sub[c] = s[p+c-1];
-      c++;
-   }
-   sub[c] = '\0';
+int endReached(char *request) {
+    int reqLen = strlen(request);
+    if(reqLen > 2) {
+        return strcmp(request + (reqLen - 2), "\r\n") == 0 ? 0 : -1;
+    } else 
+        return -1;
 }
 
 /**
@@ -60,18 +91,19 @@ void substring(char s[], char sub[], int p, int l) {
  * restituisce 0, -1 viceversa.
  */
 int readRequest(int connSock, char *request) {
-    int size = strlen(request);
-    int attempts = 10;
+    int size = REQUEST_INITIAL_SIZE;
+    int attempts = 3;
     ssize_t readBytes = 0;
-    while (size < 2 || (strcmp(request[size - 2], "\r") != 0 && strcmp(request[size - 1], "\n") != 0 ) || attempts == 0) {
-        attempts--;
-        int amountToRead = size > REQUEST_INITIAL_SIZE ? size : REQUEST_INITIAL_SIZE;
-        readBytes = Recv(connSock, request, amountToRead, 0);
-        if((strcmp(request[size - 2], "\r") != 0 && strcmp(request[size - 1], "\n") != 0) && size == readBytes) {
+    while (endReached(request) != 0 && attempts > 0) {
+        readBytes = recv(connSock, request, size - abs((int)readBytes), 0);
+        attempts = readBytes <= 0 ? (attempts - 1) : attempts;
+        if(endReached(request) == -1 && size == readBytes) {
             size += 10;
             request = realloc(request, sizeof(char) * size);
         }
     }
+
+    return endReached(request);
 }
 
 /**
@@ -80,14 +112,15 @@ int readRequest(int connSock, char *request) {
  * -1 in caso di errore.
  */
 int extractFileName(char *request, char *fileName) {
-    int reqLen = strlen(request);
+    ssize_t reqLen = strlen(request);
     if (reqLen > 6) {
-        char subGet[4];
-        char subEnd[2];
-        substring(request, subGet, 1, 4);
-        substring(request, subEnd, reqLen - 1, reqLen);
-        if (strcmp(subGet, "GET ") == 0 && strcmp(subEnd, "\r\n") == 0) {
-            substring(request, fileName, 5, reqLen - 2);
+        char *subGet = (char *) calloc(5, sizeof(char));
+        memcpy(subGet, request, 4);
+        subGet[4] = '\0';
+        if (strcmp(subGet, "GET ") == 0 && endReached(request) == 0) {
+            memcpy(fileName + strlen(FILE_PATH), request + 4, reqLen - 6);
+            fileName[strlen(FILE_PATH) + reqLen - 6] = '\0';
+            free(subGet);
             return 0;
         } else
             return -1;
@@ -102,9 +135,7 @@ int extractFileName(char *request, char *fileName) {
 int checkFile(char *fileName) {
     // la cartella nella quale viene compilato il sorgente dovrebbe essere
     // la cartella del progetto 
-    char *filePath = "./local-storage/";
-    strcat(filePath, fileName);
-    return access(filePath, F_OK) != -1 ? 0 : 1;
+    return access(fileName, F_OK) != -1 ? 0 : 1;
 }
 
 /**
@@ -115,17 +146,12 @@ int checkFile(char *fileName) {
 void getFileInfo(char *fileName, uint32_t *info) {
 
     struct stat fstat;
-    char *filePath = "./local-storage/";
-    strcat(filePath, fileName);
-    memset(info, 0, 2);
-
-    if(stat(filePath, &fstat) == 0) {
+    
+    if(stat(fileName, &fstat) == 0) {
         info[0] = (uint32_t) htonl(fstat.st_size);
         info[1] = (uint32_t) htonl(fstat.st_mtime);
     }
     
-    return info;
-
 }
 
 /**
@@ -136,19 +162,18 @@ void sendFile(int connSock, char *fileName) {
     
     uint32_t fileInfo[2];
     getFileInfo(fileName, fileInfo);
-    send(connSock, fileInfo[0], sizeof(uint32_t), 0);
+    send(connSock, &fileInfo[0], sizeof(uint32_t), 0);
     FILE *fp;
-    char *filePath = "./local-storage/";
-    strcat(filePath, fileName);
-    fp = fopen(filePath, "r");
+    fp = fopen(fileName, "rb+");
 
     if (fp != NULL) {
         char ch;
         while((ch = fgetc(fp)) != EOF) {
             send(connSock, &ch, 1, 0);
         }
-    }
+    } else 
+        printf("Server[error]: " ANSI_COLOR_RED "FAILED TO OPEN %s" ANSI_COLOR_RESET "\n", fileName);
 
     fclose(fp);
-    send(connSock, fileInfo[1], sizeof(uint32_t), 0);
+    send(connSock, &fileInfo[1], sizeof(uint32_t), 0);
 }
