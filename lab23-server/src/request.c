@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <sys/time.h> 
 #include <sys/socket.h>
+#include <sys/sendfile.h>
 #include "../headers/request.h"
 
 #define REQUEST_INITIAL_SIZE 30
@@ -167,10 +168,7 @@ void sendFile(int connSock, char *fileName) {
     fp = fopen(fileName, "rb+");
 
     if (fp != NULL) {
-        char ch;
-        while((ch = fgetc(fp)) != EOF) {
-            send(connSock, &ch, 1, 0);
-        }
+        sendfile(connSock, fileno(fp), NULL, fileInfo[0]);
     } else 
         printf("Server[error]: " ANSI_COLOR_RED "FAILED TO OPEN %s" ANSI_COLOR_RESET "\n", fileName);
 

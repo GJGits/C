@@ -103,12 +103,12 @@ void readAndStore(int connSock, const char *fileName) {
             printf("Request[receiving]: " ANSI_COLOR_CYAN "TIMESTAMP (%d)" ANSI_COLOR_RESET "\n", (int)timestamp);
             // check read from file system
             fptr = fopen(fileName,"rb+");
-            printf("Request[receiving]: " ANSI_COLOR_CYAN "CONTENT FROM FILE SYSTEM (");
+            printf("Request[receiving]: " ANSI_COLOR_CYAN "\n ##### CONTENT FROM FILE SYSTEM ##### \n" ANSI_COLOR_YELLOW);
             char ch;
              while((ch = fgetc(fptr)) != EOF) {
                  printf("%c", ch);
              }
-            printf(")" ANSI_COLOR_RESET "\n");
+            printf(ANSI_COLOR_CYAN "\n     ####################" ANSI_COLOR_RESET "\n");
             fclose(fptr);      
         }
     } else {
