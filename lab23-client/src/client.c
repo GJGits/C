@@ -11,10 +11,12 @@
 #include "../../global-headers/errlib.h"
 
 #define FILE_PATH "../local-storage/"
+#define SEND_BUF_SIZE 1024
 
 char *prog_name; // per evitare errori di compilazione
 
 void readAndStore(int connSock, const char *fileName);
+int setAddress(const char *ip, struct sockaddr_in *address);
 
 int main(int argc, char const *argv[])
 {
@@ -25,7 +27,7 @@ int main(int argc, char const *argv[])
     if(argc > 3) {
 
     memset(&server_address, 0, sizeof(server_address)); 
-    if (!inet_pton(AF_INET, argv[1], &server_address)) {
+    if (setAddress(argv[1], &server_address) == -1) {
         printf("Server[address]: " ANSI_COLOR_RED "INVALID ADDRESS" ANSI_COLOR_RESET "\n");
         err_msg("");
     }
@@ -67,7 +69,30 @@ int main(int argc, char const *argv[])
 }
 
 /**
- * Funziona che legge la risposta del server e nel caso positivo memorizza
+ * Funzione che setta l'ip nella struttura adibita a 
+ * conservare le credenziali del server. Restituisce
+ * 0 in caso di successo, -1 viceversa.
+ */
+int setAddress(const char *ip, struct sockaddr_in *address) {
+    
+    struct hostent *he;
+    struct in_addr **addr_list;
+
+    if ((he = gethostbyname(ip)) != NULL) {
+        addr_list = (struct in_addr **) he->h_addr_list;
+        // Return the first one
+        if (addr_list[0] != NULL) {
+            strcpy(ip, inet_ntoa(*addr_list[0]));
+            return 0;
+        }
+        return -1;
+    }
+
+    return !inet_pton(AF_INET, ip, address) ? -1 : 0;
+}
+
+/**
+ * Funzione che legge la risposta del server e nel caso positivo memorizza
  * la risposta nel file system.
  */
 void readAndStore(int connSock, const char *fileName) {
@@ -88,28 +113,21 @@ void readAndStore(int connSock, const char *fileName) {
             bytes_read = 0;
             FILE *fptr;
             fptr = fopen(fileName,"ab+");
-            printf("Request[receiving]: " ANSI_COLOR_CYAN "FILE CONTENT (");
             while (bytes_read < fileSize) {
-                char byte = ' ';
-                bytes_read += Recv(connSock, &byte, sizeof(byte), 0);
-                fwrite(&byte, sizeof(byte), 1, fptr);
-                printf("%c", byte);
+                int bufSize = (fileSize - bytes_read) >= SEND_BUF_SIZE ? SEND_BUF_SIZE : (fileSize - bytes_read);
+                char sendBuf[bufSize];
+                bytes_read += Recv(connSock, sendBuf, bufSize, 0);
+                int progress = ((double) bytes_read / (double) fileSize) * 100;
+                printf("\rRequest[receiving]: " ANSI_COLOR_CYAN "%d bytes (%d%%)" ANSI_COLOR_RESET, (int) bytes_read, progress);
+                fflush(stdout);
+                fwrite(sendBuf, bufSize, 1, fptr);
             }
-            printf(")" ANSI_COLOR_RESET "\n");
+            printf("\nRequest[writing]: " ANSI_COLOR_CYAN "WROTE (%d bytes)" ANSI_COLOR_RESET "\n", (int) bytes_read);
             fclose(fptr);
             uint32_t timestamp = 0;
             bytes_read = Recv(connSock, &timestamp, sizeof(timestamp), 0);
             timestamp = ntohl(timestamp);
             printf("Request[receiving]: " ANSI_COLOR_CYAN "TIMESTAMP (%d)" ANSI_COLOR_RESET "\n", (int)timestamp);
-            // check read from file system
-            fptr = fopen(fileName,"rb+");
-            printf("Request[receiving]: " ANSI_COLOR_CYAN "\n ##### CONTENT FROM FILE SYSTEM ##### \n" ANSI_COLOR_YELLOW);
-            char ch;
-             while((ch = fgetc(fptr)) != EOF) {
-                 printf("%c", ch);
-             }
-            printf(ANSI_COLOR_CYAN "\n     ####################" ANSI_COLOR_RESET "\n");
-            fclose(fptr);      
         }
     } else {
         printf("%s\n", response);
