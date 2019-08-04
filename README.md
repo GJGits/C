@@ -20,7 +20,9 @@ prevede solamente file con estensione `.h` di conseguenza non contiene al suo in
 file di libreria in esso presenti copiare i file con estensione `.c` all'interno della cartella `src` di cui sopra.
 * **test:** cartella per ora inutilizzata, tenuta per avere una struttura dei progetti estensibile e simile a quella utilizza per i progetti
 in C++ 
-* **local-storage:** cartella che rappresenta un local storage per l'applicativo, qui vanno inseriti eventuali file di configurazione e file necessari per il funzionamento dell'applicazione che non siano sorgenti. Nel repository non stati inseriti file di grosse dimensioni in quanto GitHub limita le dimensioni dei file sui quali viene fatto push. Un comando utile a creare rapidamente dei grossi file in linux è il seguente: `fallocate -l 1G`, l'opzione `-l` sta per length e a seguire troviamo la dimensione del file. Per ulteriori informazioni sul comando: [fallocate](http://man7.org/linux/man-pages/man1/fallocate.1.html).
+* **local-storage:** cartella che rappresenta un local storage per l'applicativo, qui vanno inseriti eventuali file di configurazione e file necessari per il funzionamento dell'applicazione che non siano sorgenti. Nel repository non stati inseriti file di grosse dimensioni in quanto GitHub limita le dimensioni dei file sui quali viene fatto push. Un comando utile a creare rapidamente dei grossi file in linux è il seguente: `fallocate -l 1G <filename>`, l'opzione `-l` sta per length e a seguire troviamo la dimensione del file. Per ulteriori informazioni sul comando: [fallocate](http://man7.org/linux/man-pages/man1/fallocate.1.html). Se si clona il progetto e si volesse testare gli applicativi con file di grosse dimensioni basta apporre *large* al nome del file, es: `fallocate -l 1G large-iso.iso`, è stata inserita infatti un'apposita regola nel file `.gitignore` per risolvere il problema.
+
+> **NB:** è importante specificare l'estensione del file altrimenti la regola nel file fallisce.
 
 ## Utilizzare app con Docker 
 Per poter utilizzare l'applicazione con docker occore seguire i seguenti passaggi:
