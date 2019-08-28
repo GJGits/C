@@ -9,6 +9,7 @@
 
 #include "../../global-headers/sockwrap.h"
 #include "../../global-headers/errlib.h"
+#include "../headers/gj_client.h"
 
 #define FILE_PATH "../local-storage/"
 #define SEND_BUF_SIZE 1024
@@ -16,30 +17,13 @@
 char *prog_name; // per evitare errori di compilazione
 
 void readAndStore(int connSock, const char *fileName);
-int setAddress(const char *ip, struct sockaddr_in *address);
 
 int main(int argc, char const *argv[])
 {
-    uint16_t port;
-    struct sockaddr_in server_address;
     int sockfd;
 
-    if(argc > 3) {
-
-    memset(&server_address, 0, sizeof(server_address)); 
-    if (setAddress(argv[1], &server_address) == -1) {
-        printf("Server[address]: " ANSI_COLOR_RED "INVALID ADDRESS" ANSI_COLOR_RESET "\n");
-        err_msg("");
-    }
-    
-    printf("Server[address]: " ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET "\n", argv[1]);
-    parsePort(argv[2], &port);
-    sockfd = Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-    server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(port);
-
-    Connect(sockfd, (const struct sockaddr*) &server_address, sizeof(server_address));
+    checkArgc(argc, "Usage: <server address> <server port> <fileName1> ... <fileNameN>\n");
+    sockfd = connectTcpClient(argv[1],argv[2]);
 
     for(int i = 3; i < argc; i++) {
         int reqSize = 6 + strlen(argv[i]);
@@ -59,37 +43,12 @@ int main(int argc, char const *argv[])
         readAndStore(sockfd, argv[i]);
     }
 
-    } else {
-        printf("Usage: <server address> <server port> <fileName1> ... <fileNameN>\n");
-    }
 
 
 
     return 0;
 }
 
-/**
- * Funzione che setta l'ip nella struttura adibita a 
- * conservare le credenziali del server. Restituisce
- * 0 in caso di successo, -1 viceversa.
- */
-int setAddress(const char *ip, struct sockaddr_in *address) {
-    
-    struct hostent *he;
-    struct in_addr **addr_list;
-
-    if ((he = gethostbyname(ip)) != NULL) {
-        addr_list = (struct in_addr **) he->h_addr_list;
-        // Return the first one
-        if (addr_list[0] != NULL) {
-            strcpy(ip, inet_ntoa(*addr_list[0]));
-            return 0;
-        }
-        return -1;
-    }
-
-    return !inet_pton(AF_INET, ip, address) ? -1 : 0;
-}
 
 /**
  * Funzione che legge la risposta del server e nel caso positivo memorizza

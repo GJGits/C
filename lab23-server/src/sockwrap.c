@@ -58,7 +58,7 @@ void parsePort(const char *port, uint16_t *uPort) {
 void bindToAny(int sockfd, uint16_t port) {
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	addr.sin_port = htons(port);
 	Bind(sockfd, (struct sockaddr*) &addr, sizeof(addr));
 	printf("Server[binding]: " ANSI_COLOR_GREEN "ANY ADDRESS" ANSI_COLOR_RESET "\n");

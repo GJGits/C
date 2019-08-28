@@ -16,6 +16,8 @@ reference: Stevens, Unix network programming (3ed)
 
 extern int daemon_proc;
 
+void checkArgc(int argc, const char* usage_message);
+
 void err_msg (const char *fmt, ...);
 
 void err_quit (const char *fmt, ...);

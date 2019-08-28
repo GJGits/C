@@ -34,7 +34,7 @@ cp -rf ./local-storage/* ./app/project/local-storage/
 echo -e 'FROM gcc-valgrind' >> Dockerfile
 echo -e 'COPY ./app /usr/src/myapp' >> Dockerfile
 echo -e 'WORKDIR /usr/src/myapp/project/src' >> Dockerfile
-echo -e 'RUN gcc -g -Wall -DTRACE -o myapp ./*' >> Dockerfile
+echo -e 'RUN gcc -std=gnu99 -g -Wall -DTRACE -o myapp ./*' >> Dockerfile
 echo -e 'EXPOSE '$port':'$port'' >> Dockerfile
 echo -e $cmd >> Dockerfile
 sudo docker build -t $container_name .

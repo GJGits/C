@@ -16,9 +16,10 @@ reference: Stevens, Unix network programming (3ed)
 #include <errno.h>
 
 #define MAXLINE 4095
+#define MIN_ARGC 4 // set min argc value
+#define MAX_ARGC 20 // set max arg value
 
 int daemon_proc = 0; /* set to 0 if stdout/stderr available, else set to 1 */
-
 
 /* Print message and return to caller
  * Caller specifies "errnoflag" and "level" */
@@ -93,4 +94,10 @@ void err_quit (const char *fmt, ...) {
 	err_doit (0, LOG_ERR, fmt, ap);
 	va_end (ap);
 	exit (1);
+}
+
+void checkArgc(int argc, const char* usage_message) {
+	if (argc < MIN_ARGC || argc > MAX_ARGC) {
+		err_quit(usage_message);
+	}
 }
