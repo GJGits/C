@@ -5,7 +5,7 @@ Questo repository contiene vari progetti relativi ai laboratori del corso: *Prog
 Per creare un progetto in maniera automatica è possibile utilizzare lo script `crapp` presente all'interno del repository. Per utilizzarlo:
 1. Posizionarsi nella cartella C 
 2. Eseguire uno dei seguenti comandi:
-	1. Per creare un applicativo server: ./crapp `<project-name> -s`
+	1. Per creare un applicativo server: ./crapp `<project-name> -s [-tcp|-udp]` attualmente  		   l'unico protocollo supportato è tcp quindi il comando diventa: `<project-name> -s -tcp`
 	2. Per creare un applicativo client: ./crapp `<project-name> -c`
 > **NB:** lo script contiene comandi `sudo` quindi va eseguito su macchina Linux, assicurarsi che il file abbia i permessi `rwx`
 

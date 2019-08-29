@@ -1,0 +1,1 @@
+void initStr(char* string, int length);

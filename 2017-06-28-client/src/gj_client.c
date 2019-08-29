@@ -9,7 +9,10 @@
 
 #include "../../global-headers/sockwrap.h"
 #include "../../global-headers/errlib.h"
-#include "../headers/gj_client.h"
+#include "../../global-headers/gj_client.h"
+#include "../../global-headers/gj_tools.h"
+
+#define READ_BUF_SIZE 1024
 
 /**
  * Setta l'ip nella struttura adibita a 
@@ -70,22 +73,57 @@ int connectTcpClient(const char *address, const char *char_port) {
 
 }
 
-void doClient(int connSock, char **requests) {
+void doClient(int connSock, const char **requests) {
 
-    int numOfRequests = sizeof(requests) / sizeof(char);
-
+    // valgrind immette 7 parametri in più 
+    int numOfRequests = (sizeof(requests) / sizeof(char)) - 7;
     for(int i = 0; i < numOfRequests; i++) {
         printf("Client[request]: " ANSI_COLOR_CYAN "%s" ANSI_COLOR_RESET "\n", requests[i]);
         clientSend(connSock, requests[i]);
-        clientReceive(connSock);
+        clientReceive(connSock, requests[i]);
     }
 
 }
 
-void clientSend(int connSock, char *request) {
+void clientSend(int connSock, const char *request) {
     // TODO: INSERIRE LOGICA SEND QUI
+    Send(connSock, '0', 1, 0); // -1: SEND GET MESSAGE
+    Send(connSock, htons((u_int16_t)strlen(request)), 2, 0); // -2: SEND FILE NAME LENGTH
+    Send(connSock, request, strlen(request), 0); // -3: SEND FILE NAME
 }
 
-void clientReceive(int connSock) {
+void clientReceive(int connSock, char *request) {
     // TODO: INSERIRE LOGICA RECEIVE QUI
+    char respStatus;
+    Recv(connSock, &respStatus, 1, 0);
+    
+    if(respStatus == '1') {
+        
+        u_int32_t fileSize = 0;
+        Recv(connSock, &fileSize, 4, 0);
+        fileSize = ntohl(fileSize);
+        ssize_t bytesRead = 0;
+        FILE *fp;
+        fp = fopen(request, "ab+");
+        
+        while(bytesRead < fileSize) {
+            ssize_t remaining = fileSize - bytesRead;
+            ssize_t toRead = (remaining < READ_BUF_SIZE) ? remaining : READ_BUF_SIZE; 
+            char readBuf[toRead];
+            bytesRead += Recv(connSock, readBuf, toRead, 0);
+            showProgress((int) bytesRead, (int) fileSize, "Request[receiving]: ");
+            fwrite(readBuf, toRead, 1, fp);
+        }
+        
+        printf("\nRequest[writing]: " ANSI_COLOR_CYAN "WROTE (%d bytes)" ANSI_COLOR_RESET "\n", (int) bytesRead);
+        fclose(fp);
+
+        uint32_t timestamp = 0;
+        bytesRead += Recv(connSock, &timestamp, 4, 0);
+        timestamp = ntohl(timestamp);
+        printf("Request[receiving]: " ANSI_COLOR_CYAN "TIMESTAMP (%d)" ANSI_COLOR_RESET "\n", (int)timestamp);
+
+    } else {
+        printf("Client[request]: " ANSI_COLOR_RED "ERR" ANSI_COLOR_RESET "\n");
+    }
 }

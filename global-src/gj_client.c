@@ -9,7 +9,7 @@
 
 #include "../../global-headers/sockwrap.h"
 #include "../../global-headers/errlib.h"
-#include "../headers/gj_client.h"
+#include "../../global-headers/gj_client.h"
 
 /**
  * Setta l'ip nella struttura adibita a 
@@ -70,22 +70,22 @@ int connectTcpClient(const char *address, const char *char_port) {
 
 }
 
-void doClient(int connSock, char **requests) {
+void doClient(int connSock, const char **requests) {
 
     int numOfRequests = sizeof(requests) / sizeof(char);
 
     for(int i = 0; i < numOfRequests; i++) {
         printf("Client[request]: " ANSI_COLOR_CYAN "%s" ANSI_COLOR_RESET "\n", requests[i]);
         clientSend(connSock, requests[i]);
-        clientReceive(connSock);
+        clientReceive(connSock, requests[i]);
     }
 
 }
 
-void clientSend(int connSock, char *request) {
+void clientSend(int connSock, const char *request) {
     // TODO: INSERIRE LOGICA SEND QUI
 }
 
-void clientReceive(int connSock) {
+void clientReceive(int connSock, const char *request) {
     // TODO: INSERIRE LOGICA RECEIVE QUI
 }

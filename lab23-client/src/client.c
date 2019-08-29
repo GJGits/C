@@ -10,6 +10,7 @@
 #include "../../global-headers/sockwrap.h"
 #include "../../global-headers/errlib.h"
 #include "../headers/gj_client.h"
+#include "../headers/tools.h"
 
 #define FILE_PATH "../local-storage/"
 #define SEND_BUF_SIZE 1024
@@ -18,8 +19,8 @@ char *prog_name; // per evitare errori di compilazione
 
 void readAndStore(int connSock, const char *fileName);
 
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
+    
     int sockfd;
 
     checkArgc(argc, "Usage: <server address> <server port> <fileName1> ... <fileNameN>\n");
@@ -27,14 +28,8 @@ int main(int argc, char const *argv[])
 
     for(int i = 3; i < argc; i++) {
         int reqSize = 6 + strlen(argv[i]);
-        char fileName[strlen(FILE_PATH) + reqSize - 5];
-        memset(fileName, ' ', strlen(FILE_PATH) + reqSize - 5);
-        memcpy(fileName, FILE_PATH, strlen(FILE_PATH));
-        memcpy(fileName + strlen(FILE_PATH), argv[i], reqSize - 6);
-        fileName[strlen(FILE_PATH) + reqSize - 6] = '\0';
-        char request[reqSize];
-        memset(request, ' ', reqSize);
-        request[reqSize] = '\0';
+        char request[reqSize + 1];
+        initStr(request, reqSize);
         memcpy(request, "GET ", 4);
         memcpy(request + 4, argv[i], reqSize - 6);
         memcpy(request + 4 + reqSize - 6, "\r\n", 2);
@@ -42,9 +37,6 @@ int main(int argc, char const *argv[])
         Send(sockfd, request, reqSize, 0);
         readAndStore(sockfd, argv[i]);
     }
-
-
-
 
     return 0;
 }
@@ -57,9 +49,7 @@ int main(int argc, char const *argv[])
 void readAndStore(int connSock, const char *fileName) {
 
     // read response
-    char response[6];
-    memset(response, '\0', 6);
-    response[5] = '\0';
+    char response[6] = "";
     ssize_t bytes_read = Recv(connSock, response, 5, 0);
 
     if(strcmp(response, "+OK\r\n") == 0) {

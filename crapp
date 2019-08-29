@@ -2,12 +2,12 @@
 
 prj_name=$1
 app_type=$2
+protocol=$3
 mkdir -p "$prj_name/src"
 mkdir -p "$prj_name/headers"
 mkdir -p "$prj_name/test"
 mkdir -p "$prj_name/local-storage"
-cp ./server-test/src/sockwrap.c "$prj_name/src"
-cp ./server-test/src/errlib.c "$prj_name/src" 
+cp -rf ./global-src/* "$prj_name/src/"
 if [ $app_type != "-s" ]
 then
   touch	"$prj_name/src/client.c"
@@ -18,41 +18,29 @@ then
 #include <string.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include<time.h>
+#include <time.h>
 #include <inttypes.h>
 
 #include "../../global-headers/sockwrap.h"
 #include "../../global-headers/errlib.h"
+#include "../../global-headers/gj_client.h"
+#include "../../global-headers/gj_tools.h"
 
 char *prog_name; // per evitare errori di compilazione
 
-int main(int argc, char const *argv[])
-{
-    uint16_t port;
-    struct sockaddr_in server_address;
-    int sockfd;
-
-    memset(&server_address, 0, sizeof(server_address)); 
-    if (!inet_pton(AF_INET, argv[1], &server_address)) {
-        printf("Address: " ANSI_COLOR_RED "INVALID ADDRESS" ANSI_COLOR_RESET "\n");
-        err_msg("");
-    }
+int main(int argc, char const *argv[]) {
     
-    printf("Address: " ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET "\n", argv[1]);
-    parsePort(argv[2], &port);
-    sockfd = Socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-
-    server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(port);
-
-    ssize_t bytes_sent = 0;
+    checkArgc(argc, "Usage: usage message here...");
+    int connSock = connectTcpClient(argv[1],argv[2]);
+    doClient(connSock, requestsHere);
 
     return 0;
 }
 
 EOF
 		
-else
+if [ $protocol == "-tcp" ]
+then
   touch	"$prj_name/src/server.c"
   cat <<EOF >> "$prj_name/src/server.c" 
 #include "../../global-headers/sockwrap.h"
@@ -62,14 +50,19 @@ else
 #include <inttypes.h>
 #include <errno.h>
 
+#include "../../global-headers/sockwrap.h"
+#include "../../global-headers/errlib.h"
+#include "../../global-headers/gj_server.h"
+#include "../../global-headers/gj_tools.h"
+
 char *prog_name; // per evitare errori di compilazione
-int main(int argc, char const *argv[])
-{
-    uint16_t port;
-    int sockfd;
-    struct sockaddr_in client_addr;
+int main(int argc, char const *argv[]) {
     
-    parsePort(argv[1], &port);
+    checkArgc(argc, "Usage: <port>");
+    int passiveSock = startTcpServer(INADDR_ANY, argv[1]);
+    runTcpInstance(passiveSock);
+    
+    close(passiveSock);	
 
     return 0;
 }
