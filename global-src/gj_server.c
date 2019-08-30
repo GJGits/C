@@ -47,11 +47,11 @@ void runTcpInstance(int passiveSock) {
 
 void doTcpJob(int connSock) {
     //TODO: uscire in caso di errore di una delle due fasi
-    if(doTcpReceive(connSock) == 0)
-        doTcpSend(connSock);
+    if(doTcpReceive(connSock, "request here") == 0)
+        doTcpSend(connSock, "request here");
 }
 
-int doTcpReceive(int connSock) {
+int doTcpReceive(int connSock, char *request) {
     // TODO: INSERIRE LOGICA RECEIVE QUI
     struct timeval tval;
     fd_set cset;
@@ -68,6 +68,6 @@ int doTcpReceive(int connSock) {
     return -1;
 }
 
-void doTcpSend(int connSock) {
+void doTcpSend(int connSock, char *request) {
     // TODO: INSERIRE LOGICA SEND QUI
 }

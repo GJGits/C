@@ -87,12 +87,17 @@ void doClient(int connSock, const char **requests) {
 
 void clientSend(int connSock, const char *request) {
     // TODO: INSERIRE LOGICA SEND QUI
-    Send(connSock, '0', 1, 0); // -1: SEND GET MESSAGE
-    Send(connSock, htons((u_int16_t)strlen(request)), 2, 0); // -2: SEND FILE NAME LENGTH
-    Send(connSock, request, strlen(request), 0); // -3: SEND FILE NAME
+    uint8_t byte = 0;
+    Send(connSock, &byte, 1, 0); // -1: SEND GET MESSAGE
+    u_int16_t fileNameLen = htons((u_int16_t)strlen(request)); 
+    Send(connSock, &fileNameLen, 2, 0); // -2: SEND FILE NAME LENGTH
+    char fileName[fileNameLen];
+    memset(fileName, ' ', fileNameLen);
+    strcpy(fileName, request);
+    Send(connSock, fileName, fileNameLen, 0); // -3: SEND FILE NAME
 }
 
-void clientReceive(int connSock, char *request) {
+void clientReceive(int connSock, const char *request) {
     // TODO: INSERIRE LOGICA RECEIVE QUI
     char respStatus;
     Recv(connSock, &respStatus, 1, 0);
