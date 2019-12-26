@@ -27,8 +27,8 @@
 #include <inttypes.h> // SCNu16
 #include <ctype.h>
 
-#include "../../global-headers/errlib.h"
-#include "../../global-headers/sockwrap.h"
+#include "errlib.h"
+#include "sockwrap.h"
 
 extern char *prog_name;
 

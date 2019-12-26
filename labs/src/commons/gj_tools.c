@@ -1,4 +1,4 @@
-#include "../../global-headers/gj_tools.h"
+#include "gj_tools.h"
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +7,15 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-#include "../../global-headers/sockwrap.h"
+#include "sockwrap.h"
+
+int str_to_int(char *string) {
+    return atoi(string);
+}
+
+void int_to_str(char *string, int num) {
+    sprintf(string, "%d", num);
+}
 
 void initStr(char* string, int length) {
     memset(string, ' ', length);

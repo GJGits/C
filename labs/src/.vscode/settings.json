@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "sockwrap.h": "c",
+        "errlib.h": "c"
+    }
+}
