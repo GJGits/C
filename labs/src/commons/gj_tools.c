@@ -18,7 +18,7 @@ void int_to_str(char *string, int num) {
 }
 
 void initStr(char* string, int length) {
-    memset(string, ' ', length);
+    memset(string, '\0', length);
     string[length] = '\0';
 }
 

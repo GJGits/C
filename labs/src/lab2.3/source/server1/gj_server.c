@@ -1,5 +1,6 @@
 
 #include <unistd.h>
+#include <sys/sendfile.h>
 #include "../../../commons/gj_tools.h"
 #include "../../../commons/gj_server.h"
 
@@ -22,6 +23,7 @@ void runIterativeTcpInstance(int passiveSock) {
     struct sockaddr_in cli_addr;
     socklen_t addr_len = sizeof(struct sockaddr_in);
 
+    //printf(
     while(1) {
         printf("Server[accepting]: " ANSI_COLOR_YELLOW "WAITING FOR A CONNECTION..." ANSI_COLOR_RESET "\n");
         int connSock = Accept(passiveSock , (struct sockaddr *) &cli_addr, &addr_len);
@@ -34,7 +36,8 @@ void runIterativeTcpInstance(int passiveSock) {
 void doTcpJob(int connSock) {
     //TODO: uscire in caso di errore di una delle due fasi
     printf("Server[connection]:" ANSI_COLOR_GREEN "STARTED A NEW ON CONNECTION (PID=%d)" ANSI_COLOR_RESET "\n", getpid());
-    char request[4096];
+    char request[256];
+    initStr(request, 256);
     if(doTcpReceive(connSock, request) == 0)
         doTcpSend(connSock, request);
     else {
@@ -53,22 +56,19 @@ void doTcpJob(int connSock) {
  * */
  
 int doTcpReceive(int connSock, char *request) {
+    
     struct timeval tval;
     fd_set cset;
     FD_ZERO(&cset);
     FD_SET(connSock, &cset);
     tval.tv_sec = 15;
     tval.tv_usec = 0;
-
     if(Select(FD_SETSIZE, &cset, NULL, NULL, &tval) == 1) {
         // TODO: INSERIRE LOGICA RECEIVE QUI
         ssize_t read = 0;
-        int attempts = 1;
-        while (read < 4096 && attempts > 0) {
-         ssize_t received = recv(connSock, request, 4096, 0); 
+        while (reqCompleted(request) == -1 ) {
+         ssize_t received = Recv(connSock, request, 256, 0); 
          read += received;
-         if (received == 0)
-            attempts--;  
         }
         printf("Server[receive]: " ANSI_COLOR_CYAN "RECEIVED %s" ANSI_COLOR_RESET "\n", request);
         return checkRequest(request);
@@ -86,7 +86,7 @@ void doTcpSend(int connSock, char *request) {
     send(connSock, ok_msg, 5, 0);
 
     // 2. send file size
-    FILE *fp = fopen(request, "rb");
+    FILE *fp = fopen(request, "rb+");
 
     // qui il file dovrebbe esistere, ma potrebbe essere inacessibile o
     // l'apertura potrebbe fallire
@@ -109,22 +109,31 @@ void doTcpSend(int connSock, char *request) {
 
         // 3. send file content
         ssize_t sent = 0;
-        int attempts = 2;
-        char send_buf[1000]; // max 1kB per volta
-        while (sent < f_size && attempts > 0) {
-            int send_size = (f_size - sent) > 1000 ? 1000 : (f_size - sent);
-            fgets(send_buf, send_size, fp);
-            sent += send(connSock, send_buf, send_size, 0);
-            showProgress((int)sent, (int)f_size, "Server[sending]:");
+        printf("fsize: %d", (int)f_size);
+        while (sent < f_size) {
+            sent += sendfile(connSock, fileno(fp), NULL, f_size);
+            showProgress((int)sent, (int)f_size, "Server[sending]: ");
         }
+
+        fclose(fp);
 
         // 4. send file timestamp
         uint32_t net_f_time = htonl(f_time);
         send(connSock, &net_f_time, 4, 0); 
 
+    } else {
+        char err_buff[7] = "-ERR\r\n";
+        send(connSock, err_buff, 6, 0);
+        close(connSock);
+        return;
     }
 
 
+}
+
+int reqCompleted(char *request) {
+    int len = strlen(request);
+    return len > 6 && request[len - 2] == '\r' && request[len - 1] == '\n' ? 0 : -1;
 }
 
 int checkRequest(char *request) {

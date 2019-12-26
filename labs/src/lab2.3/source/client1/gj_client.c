@@ -71,7 +71,6 @@ void doClient(int connSock, const char *request) {
 
 void clientSend(int connSock, const char *request) {
     // TODO: INSERIRE LOGICA SEND QUI
-    printf("sock in send: %d\n", connSock);
     // 1. Creo richiesta
     char richiesta[4 + strlen(request) + 3];
     memset(richiesta, '\0', 4 + strlen(request) + 3);
@@ -80,22 +79,13 @@ void clientSend(int connSock, const char *request) {
     memcpy(richiesta + 4 + strlen(request), "\r\n", 2);
    
     // 2. Invio richiesta
-     Send(connSock, richiesta, (4 + strlen(request) + 2), 0);
+     Send(connSock, richiesta, (4 + strlen(request) + 2),  0);
      printf("Client[request]: " ANSI_COLOR_CYAN "%s" ANSI_COLOR_RESET "\n", richiesta);
 }
 
 void clientReceive(int connSock, const char *request) {
     // TODO: INSERIRE LOGICA RECEIVE QUI
 
-    //struct timeval tval;
-    //fd_set cset;
-    //FD_ZERO(&cset);
-   // FD_SET(connSock, &cset);
-    //tval.tv_sec = 15;
-    //tval.tv_usec = 0;
-
-    //if(Select(FD_SETSIZE, &cset, NULL, NULL, &tval) == 1) { 
-       
        // 1. leggo tipo di risposta e se ok procedo
        char resp_type[6];
        Recv(connSock, resp_type, 5, 0);
@@ -124,6 +114,4 @@ void clientReceive(int connSock, const char *request) {
           }
        }
        
-    //}
-    //printf("Client[error]: " ANSI_COLOR_RED "TIMEOUT! NESSUNA RISPOSTA DAL SERVER " ANSI_COLOR_RESET "\n");
 }

@@ -20,3 +20,4 @@ void doTcpJob(int connSock);
 int doTcpReceive(int connSock, char *request);
 void doTcpSend(int connSock, char *request);
 int checkRequest(char *request);
+int reqCompleted(char *request);
