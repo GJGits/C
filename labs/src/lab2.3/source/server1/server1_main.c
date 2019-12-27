@@ -18,14 +18,14 @@ int main (int argc, char *argv[]) {
        return 1;
     }
 
-    int sockfd;
-    
 	// procedo solo se vengono passati esattamente due parametri allo script
  	// 1. il nome dello script (default)
 	// 2. la porta
 	if (argc == 2) {
-		sockfd = startTcpServer(argv[1]);
-		runIterativeTcpInstance(sockfd);
+		int passiveSocket = startTcpServer(argv[1]);
+		runIterativeTcpInstance(passiveSocket);
+		close(passiveSocket);
+		return 0;
 	}
 
 	// se arrivo qui ho app crash

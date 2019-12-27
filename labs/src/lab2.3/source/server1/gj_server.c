@@ -23,7 +23,6 @@ void runIterativeTcpInstance(int passiveSock) {
     struct sockaddr_in cli_addr;
     socklen_t addr_len = sizeof(struct sockaddr_in);
 
-    //printf(
     while(1) {
         printf("Server[accepting]: " ANSI_COLOR_YELLOW "WAITING FOR A CONNECTION..." ANSI_COLOR_RESET "\n");
         int connSock = Accept(passiveSock , (struct sockaddr *) &cli_addr, &addr_len);

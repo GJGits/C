@@ -88,14 +88,15 @@ void clientReceive(int connSock, const char *request) {
 
        // 1. leggo tipo di risposta e se ok procedo
        char resp_type[6];
+       initStr(resp_type, 6);
        Recv(connSock, resp_type, 5, 0);
-       if (resp_type == "+OK\r\n") {
+       if (strcmp(resp_type, "+OK\r\n") == 0) {
           // 2. leggo lunghezza file
           printf("Client[receive]: " ANSI_COLOR_CYAN "%s +OK" ANSI_COLOR_RESET "\n", request);
           uint32_t f_size;
           Recv(connSock, &f_size, 4, 0);
-          printf("Client[receive]: " ANSI_COLOR_CYAN "%s %d bytes" ANSI_COLOR_RESET "\n", request, (int) f_size);
           f_size = ntohl(f_size);
+          printf("Client[receive]: " ANSI_COLOR_CYAN "%s %d bytes" ANSI_COLOR_RESET "\n", request, (int) f_size);
           // 3. creo il file
           FILE *fp = fopen(request, "ab"); 
           if (fp != NULL) {
@@ -104,14 +105,16 @@ void clientReceive(int connSock, const char *request) {
                 ssize_t r_size = (f_size - read) > 1000 ? 1000 : (f_size - read);
                 char r_buf[r_size];
                 read += Recv(connSock, r_buf, r_size, 0);
-                fputs(r_buf, fp); 
                 showProgress((int) read, (int)f_size, "Client[writing]: ");
+                fwrite(r_buf, r_size, 1, fp); 
               }
               fclose(fp);
           } else {
             printf("Client[error]: " ANSI_COLOR_RED "ERRORE NELLA CREAZIONE DEL FILE " ANSI_COLOR_RESET "\n");
             return;
           }
+       } else {
+           printf("Client[request]: " ANSI_COLOR_RED "ERROR RESPONSE FROM SERVER" ANSI_COLOR_RESET "\n");
        }
        
 }
