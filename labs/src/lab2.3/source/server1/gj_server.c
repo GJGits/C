@@ -4,6 +4,8 @@
 #include "../../../commons/gj_tools.h"
 #include "../../../commons/gj_server.h"
 
+const int REQ_BUF_SIZE = 262; // 6 (GET \r\n) + 256 (Max filename len in linux)
+
 int startTcpServer(const char* port) {
 
     uint16_t i_port;
@@ -35,8 +37,7 @@ void runIterativeTcpInstance(int passiveSock) {
 void doTcpJob(int connSock) {
     //TODO: uscire in caso di errore di una delle due fasi
     printf("Server[connection]:" ANSI_COLOR_GREEN "STARTED A NEW ON CONNECTION (PID=%d)" ANSI_COLOR_RESET "\n", getpid());
-    char request[256];
-    initStr(request, 256);
+    char *request = (char *) calloc(REQ_BUF_SIZE, sizeof(char)); 
     if(doTcpReceive(connSock, request) == 0)
         doTcpSend(connSock, request);
     else {
@@ -44,7 +45,7 @@ void doTcpJob(int connSock) {
         char err_buff[7] = "-ERR\r\n";
         send(connSock, err_buff, 6, 0);
     }
-    //close(connSock);
+    free(request);
 }
 
 /**
@@ -66,14 +67,13 @@ int doTcpReceive(int connSock, char *request) {
         // TODO: INSERIRE LOGICA RECEIVE QUI
         ssize_t read = 0;
         while (reqCompleted(request) == -1 ) {
-         ssize_t received = Recv(connSock, request, 256, 0); 
+         ssize_t received = Recv(connSock, request, REQ_BUF_SIZE, 0); 
          read += received;
         }
         printf("Server[receive]: " ANSI_COLOR_CYAN "RECEIVED %s" ANSI_COLOR_RESET "\n", request);
         return checkRequest(request);
     }
     // esco per timeout
-    //close(connSock);
     return -1;
 }
 
@@ -93,7 +93,6 @@ void doTcpSend(int connSock, char *request) {
         printf("SERVER[READING]" ANSI_COLOR_RED "CANNOT OPEN FILE %s " ANSI_COLOR_RESET "\n", request);
         char err_buff[7] = "-ERR\r\n";
         send(connSock, err_buff, 6, 0);
-       // close(connSock);
         return;
     }
 
@@ -108,10 +107,10 @@ void doTcpSend(int connSock, char *request) {
 
         // 3. send file content
         ssize_t sent = 0;
-        printf("fsize: %d", (int)f_size);
         while (sent < f_size) {
             sent += sendfile(connSock, fileno(fp), NULL, f_size);
             showProgress((int)sent, (int)f_size, "Server[sending]: ");
+            printf("\n");
         }
 
         fclose(fp);

@@ -108,6 +108,7 @@ void clientReceive(int connSock, const char *request) {
                 showProgress((int) read, (int)f_size, "Client[writing]: ");
                 fwrite(r_buf, r_size, 1, fp); 
               }
+              printf("\n");
               fclose(fp);
           } else {
             printf("Client[error]: " ANSI_COLOR_RED "ERRORE NELLA CREAZIONE DEL FILE " ANSI_COLOR_RESET "\n");
