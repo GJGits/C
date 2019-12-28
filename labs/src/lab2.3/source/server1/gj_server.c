@@ -43,8 +43,8 @@ void doTcpJob(int connSock) {
         printf("Server[error]: " ANSI_COLOR_RED "INVALID REQUEST FROM CLIENT: %s" ANSI_COLOR_RESET "\n", request);
         char err_buff[7] = "-ERR\r\n";
         send(connSock, err_buff, 6, 0);
-        close(connSock);
     }
+    //close(connSock);
 }
 
 /**
@@ -73,7 +73,7 @@ int doTcpReceive(int connSock, char *request) {
         return checkRequest(request);
     }
     // esco per timeout
-    close(connSock);
+    //close(connSock);
     return -1;
 }
 
@@ -93,7 +93,7 @@ void doTcpSend(int connSock, char *request) {
         printf("SERVER[READING]" ANSI_COLOR_RED "CANNOT OPEN FILE %s " ANSI_COLOR_RESET "\n", request);
         char err_buff[7] = "-ERR\r\n";
         send(connSock, err_buff, 6, 0);
-        close(connSock);
+       // close(connSock);
         return;
     }
 
@@ -119,11 +119,12 @@ void doTcpSend(int connSock, char *request) {
         // 4. send file timestamp
         uint32_t net_f_time = htonl(f_time);
         send(connSock, &net_f_time, 4, 0); 
+       // close(connSock);
 
     } else {
         char err_buff[7] = "-ERR\r\n";
         send(connSock, err_buff, 6, 0);
-        close(connSock);
+        //close(connSock);
         return;
     }
 

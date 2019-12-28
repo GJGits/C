@@ -12,6 +12,7 @@ then
 fi
 echo "hosting port for app: "$port
 cmd='CMD ["valgrind", "--leak-check=full", "--show-leak-kinds=all", "./myapp", '
+#cmd='CMD ["gdb", "./myapp" '
 for (( i=4; i<"$#"+1; i++ ))
 do
   cmd+='"'${!i}'"'

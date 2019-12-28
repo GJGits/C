@@ -19,7 +19,7 @@ void int_to_str(char *string, int num) {
 
 void initStr(char* string, int length) {
     memset(string, '\0', length);
-    string[length] = '\0';
+    string[length - 1] = '\0';
 }
 
 void showProgress(int done, int tot, char * progMsg) {
