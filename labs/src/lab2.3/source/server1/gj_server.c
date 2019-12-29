@@ -38,9 +38,13 @@ void doTcpJob(int connSock) {
     //TODO: uscire in caso di errore di una delle due fasi
     printf("Server[connection]:" ANSI_COLOR_GREEN "STARTED A NEW ON CONNECTION (PID=%d)" ANSI_COLOR_RESET "\n", getpid());
     char *request = (char *) calloc(REQ_BUF_SIZE, sizeof(char)); 
-    if(doTcpReceive(connSock, request) == 0)
+    int status = 0;
+    while((status = doTcpReceive(connSock, request)) == 0) {
         doTcpSend(connSock, request);
-    else {
+        free(request);
+        request = (char *) calloc(REQ_BUF_SIZE, sizeof(char));
+    }
+    if (status == -1) {
         printf("Server[error]: " ANSI_COLOR_RED "INVALID REQUEST FROM CLIENT: %s" ANSI_COLOR_RESET "\n", request);
         char err_buff[7] = "-ERR\r\n";
         send(connSock, err_buff, 6, 0);
@@ -74,7 +78,7 @@ int doTcpReceive(int connSock, char *request) {
         return checkRequest(request);
     }
     // esco per timeout
-    return -1;
+    return 1;
 }
 
 void doTcpSend(int connSock, char *request) {
@@ -118,12 +122,10 @@ void doTcpSend(int connSock, char *request) {
         // 4. send file timestamp
         uint32_t net_f_time = htonl(f_time);
         send(connSock, &net_f_time, 4, 0); 
-       // close(connSock);
 
     } else {
         char err_buff[7] = "-ERR\r\n";
         send(connSock, err_buff, 6, 0);
-        //close(connSock);
         return;
     }
 

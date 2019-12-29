@@ -87,9 +87,9 @@ void clientReceive(int connSock, const char *request) {
     // TODO: INSERIRE LOGICA RECEIVE QUI
 
        // 1. leggo tipo di risposta e se ok procedo
-       char resp_type[6];
-       initStr(resp_type, 6);
-       Recv(connSock, resp_type, 5, 0);
+       char resp_type[6] = " " ;
+       Recv(connSock, resp_type, 6, 0);
+       printf("Response: %s\n", resp_type);
        if (strcmp(resp_type, "+OK\r\n") == 0) {
           // 2. leggo lunghezza file
           printf("Client[receive]: " ANSI_COLOR_CYAN "%s +OK" ANSI_COLOR_RESET "\n", request);
@@ -110,6 +110,11 @@ void clientReceive(int connSock, const char *request) {
               }
               printf("\n");
               fclose(fp);
+              // 4. leggo timestamp
+              uint32_t timestamp;
+              Recv(connSock, &timestamp, 4, 0);
+              timestamp = ntohl(timestamp);
+              printf("Client[receive]: " ANSI_COLOR_CYAN "TIMESTAMP: %d" ANSI_COLOR_RESET "\n", (int)timestamp);
           } else {
             printf("Client[error]: " ANSI_COLOR_RED "ERRORE NELLA CREAZIONE DEL FILE " ANSI_COLOR_RESET "\n");
             return;
