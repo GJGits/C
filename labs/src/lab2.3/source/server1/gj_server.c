@@ -49,6 +49,7 @@ void doTcpJob(int connSock) {
         char err_buff[7] = "-ERR\r\n";
         send(connSock, err_buff, 6, 0);
     }
+    close(connSock);
     free(request);
 }
 
@@ -67,16 +68,19 @@ int doTcpReceive(int connSock, char *request) {
     FD_SET(connSock, &cset);
     tval.tv_sec = 15;
     tval.tv_usec = 0;
-    if(Select(FD_SETSIZE, &cset, NULL, NULL, &tval) == 1) {
+    if(select(FD_SETSIZE, &cset, NULL, NULL, &tval) == 1) {
         // TODO: INSERIRE LOGICA RECEIVE QUI
         ssize_t read = 0;
-        while (reqCompleted(request) == -1 ) {
+        while (reqCompleted(request) == -1) {
          ssize_t received = Recv(connSock, request, REQ_BUF_SIZE, 0); 
          read += received;
+         if (read == 0)
+            return 1;
         }
         printf("Server[receive]: " ANSI_COLOR_CYAN "RECEIVED %s" ANSI_COLOR_RESET "\n", request);
         return checkRequest(request);
     }
+    FD_CLR(connSock, &cset);
     // esco per timeout
     return 1;
 }

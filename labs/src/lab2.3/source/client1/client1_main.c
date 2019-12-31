@@ -19,7 +19,6 @@ int main (int argc, char *argv[])
 		for (int i = 3; i < argc; i++) {
 			doClient(connSock, argv[i]);
 		}
-
 		close(connSock);
 		return 0;
 
