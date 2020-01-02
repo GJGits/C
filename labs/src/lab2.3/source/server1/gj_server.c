@@ -75,7 +75,7 @@ int doTcpReceive(int connSock, char *request) {
          ssize_t received = Recv(connSock, request, REQ_BUF_SIZE, 0); 
          read += received;
          if (read == 0)
-            return 1;
+            return 1; // se ricevo 0 il client ha chiuso la connessione oppure non ci sono più bytes da leggere
         }
         printf("Server[receive]: " ANSI_COLOR_CYAN "RECEIVED %s" ANSI_COLOR_RESET "\n", request);
         return checkRequest(request);
@@ -122,7 +122,6 @@ void doTcpSend(int connSock, char *request) {
         }
 
         fclose(fp);
-
         // 4. send file timestamp
         uint32_t net_f_time = htonl(f_time);
         send(connSock, &net_f_time, 4, 0); 
