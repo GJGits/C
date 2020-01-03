@@ -9,6 +9,11 @@ Eseguire uno dei seguenti comandi:
 
 ## Struttura di un progetto
 
+Nel repository non stati inseriti file di grosse dimensioni in quanto GitHub limita le dimensioni dei file sui quali viene fatto push. Un comando utile a creare rapidamente dei grossi file in linux è il seguente: `fallocate -l 1G <filename>`, l'opzione -l sta per length e a seguire troviamo la dimensione del file. Per ulteriori informazioni sul comando: [fallocate](http://man7.org/linux/man-pages/man2/fallocate.2.html). Se si clona il progetto e si volesse testare gli applicativi con file di grosse dimensioni basta apporre large al nome del file, es: `fallocate -l 1G large-iso.iso`, è stata inserita infatti un'apposita regola nel file .gitignore per risolvere il problema.
+
+> **NB:** è importante specificare l'estensione del file altrimenti la regola nel file fallisce.
+
+
 
 ## Utilizzare app con Docker 
 Per poter utilizzare l'applicazione con docker occore seguire i seguenti passaggi:
