@@ -1,0 +1,26 @@
+/usr/bin/ld: /tmp/ccEhX4oF.o: in function `startTcpServer':
+gj_server.c:(.text+0x2f): undefined reference to `Socket'
+/usr/bin/ld: gj_server.c:(.text+0x45): undefined reference to `parsePort'
+/usr/bin/ld: gj_server.c:(.text+0x58): undefined reference to `bindToAny'
+/usr/bin/ld: gj_server.c:(.text+0x67): undefined reference to `Listen'
+/usr/bin/ld: /tmp/ccEhX4oF.o: in function `runIterativeTcpInstance':
+gj_server.c:(.text+0xe0): undefined reference to `Accept'
+/usr/bin/ld: /tmp/ccEhX4oF.o: in function `doTcpSend':
+gj_server.c:(.text+0x599): undefined reference to `showProgress'
+collect2: error: ld returned 1 exit status
+/usr/bin/ld: /tmp/ccd5Ysxm.o: in function `setAddress':
+gj_client.c:(.text+0x19b): undefined reference to `err_quit'
+/usr/bin/ld: gj_client.c:(.text+0x1e2): undefined reference to `err_quit'
+/usr/bin/ld: /tmp/ccd5Ysxm.o: in function `connectTcpClient':
+gj_client.c:(.text+0x27c): undefined reference to `parsePort'
+/usr/bin/ld: gj_client.c:(.text+0x290): undefined reference to `Socket'
+/usr/bin/ld: gj_client.c:(.text+0x2c1): undefined reference to `Connect'
+/usr/bin/ld: /tmp/ccd5Ysxm.o: in function `clientSend':
+gj_client.c:(.text+0x49a): undefined reference to `Send'
+/usr/bin/ld: /tmp/ccd5Ysxm.o: in function `clientReceive':
+gj_client.c:(.text+0x527): undefined reference to `Recv'
+/usr/bin/ld: gj_client.c:(.text+0x579): undefined reference to `Recv'
+/usr/bin/ld: gj_client.c:(.text+0x6ae): undefined reference to `Recv'
+/usr/bin/ld: gj_client.c:(.text+0x6cb): undefined reference to `showProgress'
+/usr/bin/ld: gj_client.c:(.text+0x727): undefined reference to `Recv'
+collect2: error: ld returned 1 exit status

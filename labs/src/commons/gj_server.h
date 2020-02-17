@@ -16,7 +16,9 @@
 
 int startTcpServer(const char* port);
 void runIterativeTcpInstance(int passiveSock);
+void runIterativeTcpInstanceParam(int passiveSock, const char * param);
 void doTcpJob(int connSock);
+void doTcpJobParam(int connSock, const char * param);
 int doTcpReceive(int connSock, char *request);
 void doTcpSend(int connSock, char *request);
 int checkRequest(char *request);

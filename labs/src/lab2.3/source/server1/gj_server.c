@@ -72,7 +72,7 @@ int doTcpReceive(int connSock, char *request) {
         // TODO: INSERIRE LOGICA RECEIVE QUI
         ssize_t read = 0;
         while (reqCompleted(request) == -1) {
-         ssize_t received = Recv(connSock, request, REQ_BUF_SIZE, 0); 
+         ssize_t received = recv(connSock, request, REQ_BUF_SIZE, 0); 
          read += received;
          if (read == 0)
             return 1; // se ricevo 0 il client ha chiuso la connessione oppure non ci sono più bytes da leggere

@@ -1,0 +1,28 @@
+/tmp/cc709IOW.o: In function `startTcpServer':
+gj_server.c:(.text+0x2b): undefined reference to `Socket'
+gj_server.c:(.text+0x41): undefined reference to `parsePort'
+gj_server.c:(.text+0x54): undefined reference to `bindToAny'
+gj_server.c:(.text+0x63): undefined reference to `Listen'
+/tmp/cc709IOW.o: In function `runIterativeTcpInstance':
+gj_server.c:(.text+0xd8): undefined reference to `Accept'
+/tmp/cc709IOW.o: In function `doTcpReceive':
+gj_server.c:(.text+0x318): undefined reference to `Recv'
+/tmp/cc709IOW.o: In function `doTcpSend':
+gj_server.c:(.text+0x586): undefined reference to `showProgress'
+collect2: error: ld returned 1 exit status
+/tmp/cc5BI9di.o: In function `setAddress':
+gj_client.c:(.text+0x146): undefined reference to `err_quit'
+gj_client.c:(.text+0x18e): undefined reference to `err_quit'
+/tmp/cc5BI9di.o: In function `connectTcpClient':
+gj_client.c:(.text+0x224): undefined reference to `parsePort'
+gj_client.c:(.text+0x238): undefined reference to `Socket'
+gj_client.c:(.text+0x269): undefined reference to `Connect'
+/tmp/cc5BI9di.o: In function `clientSend':
+gj_client.c:(.text+0x3e9): undefined reference to `Send'
+/tmp/cc5BI9di.o: In function `clientReceive':
+gj_client.c:(.text+0x472): undefined reference to `Recv'
+gj_client.c:(.text+0x4c4): undefined reference to `Recv'
+gj_client.c:(.text+0x5a8): undefined reference to `Recv'
+gj_client.c:(.text+0x5c5): undefined reference to `showProgress'
+gj_client.c:(.text+0x621): undefined reference to `Recv'
+collect2: error: ld returned 1 exit status

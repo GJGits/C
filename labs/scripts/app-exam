@@ -1,0 +1,43 @@
+#!/bin/bash
+
+prj_name=$1
+app_type=$2
+build_folder=$3
+port=3000
+container_name="my-server"
+if [ $app_type != "-s" ]
+then
+  port=$(( ((RANDOM<<15)|RANDOM) % 63001 + 2000 ))
+  container_name="my-client-$port"	
+fi
+echo "hosting port for app: "$port
+cmd='CMD ["valgrind", "--leak-check=full", "--show-leak-kinds=all", "./myapp", '
+#cmd='CMD ["gdb", "./myapp" '
+for (( i=4; i<"$#"+1; i++ ))
+do
+  cmd+='"'${!i}'"'
+  if [ $i -ne $# ]
+  then
+    cmd+=", "
+  fi
+done
+cmd+="]"
+mkdir -p ../src_exam/app
+#cp -r ../src/commons ../src/app/
+cp -r ../src_exam/$prj_name  ../src_exam/app
+echo -e 'FROM gcc-val' >> ../src_exam/Dockerfile
+echo -e 'COPY app /usr/src/myapp' >> ../src_exam/Dockerfile
+echo -e 'WORKDIR /usr/src/myapp/'$prj_name'/source/' >> ../src_exam/Dockerfile
+echo -e 'RUN gcc -std=gnu99 -g -Wall -DTRACE -o myapp '$build_folder'/*.c *.c -I'$build_folder ' -lpthread -lm' >> ../src_exam/Dockerfile
+echo -e 'EXPOSE '$port':'$port'' >> ../src_exam/Dockerfile
+echo -e $cmd >> ../src_exam/Dockerfile
+cd ../src_exam
+docker build -t $container_name .
+#cd ../../scripts
+rm -r app
+rm Dockerfile
+docker run -it --rm --name $container_name -p 127.0.0.1:$port:$port --network=host $container_name
+docker system prune -f
+#sudo docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container_name
+
+
