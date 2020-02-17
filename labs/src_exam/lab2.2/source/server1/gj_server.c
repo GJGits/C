@@ -63,8 +63,9 @@ void doUdpJob(int sockfd) {
 }
 
 void doUdpReceive(int sockfd, struct sockaddr_in *cli_addr, socklen_t *addr_len, u_int32_t *buffer) {
-    recvfrom(sockfd, buffer, sizeof(u_int32_t), 
+    Recvfrom(sockfd, buffer, sizeof(u_int32_t), 
             0, (struct sockaddr *) cli_addr, addr_len);
+    printf("Server[receiving]:" ANSI_COLOR_CYAN "RECEIVED %hu " ANSI_COLOR_RESET "\n", *buffer);
 }
 
 void doUdpSend(int sockfd, struct sockaddr_in *cli_addr, socklen_t *addr_len, u_int32_t *buffer) {
@@ -73,6 +74,7 @@ void doUdpSend(int sockfd, struct sockaddr_in *cli_addr, socklen_t *addr_len, u_
     send_buf[1] = htonl(time(NULL));
     sendto(sockfd, send_buf, (2 * sizeof(uint32_t)), 
                 0, (struct sockaddr *) cli_addr, *addr_len);
+    printf("Server[sending]:" ANSI_COLOR_CYAN "SENT %hu %hu " ANSI_COLOR_RESET "\n", send_buf[0], send_buf[1]);
 }
 
 void doTcpJob(int connSock, const char *string) {
