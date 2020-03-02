@@ -13,7 +13,7 @@ char *prog_name;
 
 int main (int argc, char *argv[])
 {	
-	if (argc >= 4) {
+	if (argc >= 5) {
 		
 		int connSock = connectTcpClient(argv[1], argv[2]);
 		doClient(connSock, argv[3], argv[4]);

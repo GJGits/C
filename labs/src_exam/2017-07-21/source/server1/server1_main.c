@@ -9,21 +9,14 @@ char *prog_name;
 
 int main (int argc, char *argv[]) {
 
-	char cwd[100];
-    
-	if (getcwd(cwd, sizeof(cwd)) != NULL) {
-       printf("App[starting]: " ANSI_COLOR_CYAN "%s" ANSI_COLOR_RESET "\n", cwd);
-    } else {
-       printf("App[quitting]: " ANSI_COLOR_RED "UNABLE TO LOCATE WDIR" ANSI_COLOR_RESET "\n");
-       return 1;
-    }
-
 	// procedo solo se vengono passati esattamente due parametri allo script
  	// 1. il nome dello script (default)
 	// 2. la porta
+	// 3. la stringa di trasformazione
 	if (argc == 3) {
 		int passiveSocket = startTcpServer(argv[1]);
-		runIterativeTcpInstance(passiveSocket, argv[2]);
+		run_params run = {argv[2]};
+		runIterativeTcpInstance(passiveSocket, &run);
 		close(passiveSocket);
 		return 0;
 	}

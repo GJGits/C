@@ -20,7 +20,7 @@ int startTcpServer(const char* port) {
     return sockfd;
 }
 
-void runIterativeTcpInstance(int passiveSock, const char *string) {
+void runIterativeTcpInstance(int passiveSock, run_params *rp) {
 
     struct sockaddr_in cli_addr;
     socklen_t addr_len = sizeof(struct sockaddr_in);
@@ -28,27 +28,22 @@ void runIterativeTcpInstance(int passiveSock, const char *string) {
     while(1) {
         printf("Server[accepting]: " ANSI_COLOR_YELLOW "WAITING FOR A CONNECTION..." ANSI_COLOR_RESET "\n");
         int connSock = Accept(passiveSock , (struct sockaddr *) &cli_addr, &addr_len);
-        doTcpJob(connSock, string);
+        doTcpJob(connSock, rp);
         close(connSock);
     }
 
 }
 
-void doTcpJob(int connSock, const char *string) {
+void doTcpJob(int connSock, run_params *rp) {
     //TODO: uscire in caso di errore di una delle due fasi
     printf("Server[connection]:" ANSI_COLOR_GREEN "STARTED A NEW ON CONNECTION (PID=%d)" ANSI_COLOR_RESET "\n", getpid());
-    char *request = (char *) calloc(REQ_BUF_SIZE, sizeof(char)); 
-    int status = 0;
-    while((status = doTcpReceive(connSock, request, string)) == 0) {
-        free(request);
-        request = (char *) calloc(REQ_BUF_SIZE, sizeof(char));
-    }
-    if (status == -1) {
-        printf("Server[error]: " ANSI_COLOR_RED "INVALID REQUEST FROM CLIENT: %s" ANSI_COLOR_RESET "\n", request);
+    client_req request = {0, 0, ""};
+    doTcpReceive(connSock, &request, rp);
+    if (request.status == -1) {
+        printf("Server[error]: " ANSI_COLOR_RED "INVALID REQUEST FROM CLIENT" ANSI_COLOR_RESET "\n");
         char err_buff[7] = "-ERR\r\n";
         send(connSock, err_buff, 6, 0);
     }
-    free(request);
 }
 
 /**
@@ -58,7 +53,7 @@ void doTcpJob(int connSock, const char *string) {
  *  - restituire un codice di errore in caso contrario
  * */
  
-int doTcpReceive(int connSock, char *request, const char *string) {
+int doTcpReceive(int connSock, client_req *request, run_params *rp) {
     
     struct timeval tval;
     fd_set cset;
@@ -68,27 +63,26 @@ int doTcpReceive(int connSock, char *request, const char *string) {
     tval.tv_usec = 0;
     if(select(FD_SETSIZE, &cset, NULL, NULL, &tval) == 1) {
         // TODO: INSERIRE LOGICA RECEIVE QUI
-        u_int32_t file_size = 0;
         ssize_t read = 0;
-        recv(connSock, &file_size, 4, 0);
-        file_size = ntohl(file_size);
+        recv(connSock, &(*request).fsize, 4, 0);
+        (*request).fsize = ntohl((*request).fsize);
         ssize_t sent = 0;
-        while (read < file_size) {
-            ssize_t read_temp = recv(connSock, request, REQ_BUF_SIZE, 0);
+        while (read < (*request).fsize) {
+            ssize_t read_temp = recv(connSock, (*request).fbuf, 1024, 0);
             read += read_temp;
-            showProgress((int)read, (int)file_size, "Server[receiving]: ");
+            showProgress((int)read, (int)(*request).fsize, "Server[receiving]: ");
             printf("\n");
             for (int i = 0; i < read_temp; i++) {
-                for (int j = 0; j < strlen(string); j++) {
-                    if (request[i] == string[j]) {
-                        request[i] = '*';
+                for (int j = 0; j < strlen((*rp).string); j++) {
+                    if ((*request).fbuf[i] == (*rp).string[j]) {
+                        (*request).fbuf[i] = '*';
                     }
                 }
             }
-            sent += send(connSock, request, read_temp, 0);
-            showProgress((int)sent, (int)file_size, "Server[sending]: ");
+            sent += send(connSock, (*request).fbuf, read_temp, 0);
+            showProgress((int)sent, (int)(*request).fsize, "Server[sending]: ");
             printf("\n");
-            memset(request, '\0', REQ_BUF_SIZE);
+            //memset(request, '\0', REQ_BUF_SIZE);
         }
     }
     FD_CLR(connSock, &cset);
@@ -96,7 +90,7 @@ int doTcpReceive(int connSock, char *request, const char *string) {
     return 1;
 }
 
-void doTcpSend(int connSock, char *request) {
+void doTcpSend(int connSock, client_req *request) {
     // TODO: INSERIRE LOGICA SEND QUI
 }
 
