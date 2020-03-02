@@ -82,7 +82,6 @@ int doTcpReceive(int connSock, client_req *request, run_params *rp) {
             sent += send(connSock, (*request).fbuf, read_temp, 0);
             showProgress((int)sent, (int)(*request).fsize, "Server[sending]: ");
             printf("\n");
-            //memset(request, '\0', REQ_BUF_SIZE);
         }
     }
     FD_CLR(connSock, &cset);

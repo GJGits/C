@@ -141,6 +141,7 @@ void clientReceive(int connSock, const char *request, long f_size) {
            showProgress((int)read, (int)f_size, "Client[receiving]: ");
            printf("\n");
        }
+       printf("buf: %s\n", buf);
        fwrite(buf, f_size, 1, fp);
        fclose(fp);
     }
