@@ -44,6 +44,12 @@ void doTcpJob(int connSock, run_params *rp) {
         char err_buff[7] = "-ERR\r\n";
         send(connSock, err_buff, 6, 0);
     }
+    if (request.status == -2) {
+        printf("Server[error]: " ANSI_COLOR_RED "EXIT FOR TIMEOUT" ANSI_COLOR_RESET "\n");
+        char err_buff[7] = "-ERR\r\n";
+        send(connSock, err_buff, 6, 0);
+    }
+    close(connSock);
 }
 
 /**
@@ -53,40 +59,51 @@ void doTcpJob(int connSock, run_params *rp) {
  *  - restituire un codice di errore in caso contrario
  * */
  
-int doTcpReceive(int connSock, client_req *request, run_params *rp) {
+void doTcpReceive(int connSock, client_req *request, run_params *rp) {
     
     struct timeval tval;
     fd_set cset;
-    FD_ZERO(&cset);
+    wait2:FD_ZERO(&cset);
     FD_SET(connSock, &cset);
     tval.tv_sec = 15;
     tval.tv_usec = 0;
     if(select(FD_SETSIZE, &cset, NULL, NULL, &tval) == 1) {
-        // TODO: INSERIRE LOGICA RECEIVE QUI
-        ssize_t read = 0;
-        recv(connSock, &(*request).fsize, 4, 0);
-        (*request).fsize = ntohl((*request).fsize);
-        ssize_t sent = 0;
-        while (read < (*request).fsize) {
-            ssize_t read_temp = recv(connSock, (*request).fbuf, 1024, 0);
-            read += read_temp;
-            showProgress((int)read, (int)(*request).fsize, "Server[receiving]: ");
-            printf("\n");
-            for (int i = 0; i < read_temp; i++) {
-                for (int j = 0; j < strlen((*rp).string); j++) {
-                    if ((*request).fbuf[i] == (*rp).string[j]) {
-                        (*request).fbuf[i] = '*';
+            // TODO: INSERIRE LOGICA RECEIVE QUI
+            ssize_t read = 0;
+            recv(connSock, &(*request).fsize, 4, 0);
+            (*request).fsize = ntohl((*request).fsize);
+            if (request->fsize < 0) {
+                request->status = -1;
+                return;
+            }
+            ssize_t sent = 0;
+            while (read < (*request).fsize) {
+                ssize_t read_temp = recv(connSock, (*request).fbuf, 10000, 0);
+                if (read_temp == 0) {
+                    // se leggo 0 i casi sono due: non ci sono byte sul buffer
+                    FD_CLR(connSock, &cset);
+                    goto wait2;
+                }
+                read += read_temp;
+                showProgress((int)read, (int)(*request).fsize, "Server[receiving]: ");
+                printf("\n");
+                for (int i = 0; i < read_temp; i++) {
+                    for (int j = 0; j < strlen((*rp).string); j++) {
+                        if ((*request).fbuf[i] == (*rp).string[j]) {
+                            (*request).fbuf[i] = '*';
+                        }
                     }
                 }
+                sent += send(connSock, (*request).fbuf, read_temp, 0);
+                showProgress((int)sent, (int)(*request).fsize, "Server[sending]: ");
+                printf("\n");
             }
-            sent += send(connSock, (*request).fbuf, read_temp, 0);
-            showProgress((int)sent, (int)(*request).fsize, "Server[sending]: ");
-            printf("\n");
+            return;
         }
-    }
     FD_CLR(connSock, &cset);
     // esco per timeout
-    return 1;
+    request->status = -2;
+    return;
 }
 
 void doTcpSend(int connSock, client_req *request) {

@@ -16,7 +16,8 @@ int main (int argc, char *argv[])
 	if (argc >= 5) {
 		
 		int connSock = connectTcpClient(argv[1], argv[2]);
-		doClient(connSock, argv[3], argv[4]);
+		cli_params params = {argv[3], argv[4]};
+		doClient(connSock, &params);
 		close(connSock);
 		return 0;
 
