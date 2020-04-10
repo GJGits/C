@@ -20,5 +20,3 @@ void runIterativeTcpInstance(int passiveSock, run_params *rp);
 void doTcpJob(int connSock, run_params *rp);
 void doTcpReceive(int connSock, client_req *request, run_params *rp);
 void doTcpSend(int connSock, client_req *request);
-int checkRequest(char *request);
-int reqCompleted(char *request);

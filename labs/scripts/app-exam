@@ -25,7 +25,7 @@ cmd+="]"
 mkdir -p ../src_exam/app
 #cp -r ../src/commons ../src/app/
 cp -r ../src_exam/$prj_name  ../src_exam/app
-echo -e 'FROM gcc-val' >> ../src_exam/Dockerfile
+echo -e 'FROM gjcode/gjcode-pds:1.0.3' >> ../src_exam/Dockerfile
 echo -e 'COPY app /usr/src/myapp' >> ../src_exam/Dockerfile
 echo -e 'WORKDIR /usr/src/myapp/'$prj_name'/source/' >> ../src_exam/Dockerfile
 echo -e 'RUN gcc -std=gnu99 -g -Wall -DTRACE -o myapp '$build_folder'/*.c *.c -I'$build_folder ' -lpthread -lm' >> ../src_exam/Dockerfile
