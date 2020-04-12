@@ -15,7 +15,7 @@ int main (int argc, char *argv[]) {
 	if (argc == 2) {
 		int passiveSocket = startTcpServer(argv[1]);
 		run_params run = {argv[2]};
-		runIterativeTcpInstance(passiveSocket, &run);
+		runRichiestaTcpInstance(passiveSocket, &run);
 		close(passiveSocket);
 		return 0;
 	}
