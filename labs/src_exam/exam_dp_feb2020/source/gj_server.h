@@ -13,11 +13,11 @@
 #include "sockwrap.h"
 #include "gj_tools.h"
 #include "errlib.h"
+#include "gj_types.h"
 
 int startTcpServer(const char* port);
-void runIterativeTcpInstance(int passiveSock);
-void doTcpJob(int connSock);
-int doTcpReceive(int connSock, char *request);
-void doTcpSend(int connSock, char *request);
-int checkRequest(char *request);
-int reqCompleted(char *request);
+void runIterativeTcpInstance(int passiveSock, run_params *rp);
+void runRichiestaTcpInstance(int passiveSock, run_params *rp);
+void doTcpJob(int connSock, run_params *rp);
+void doTcpReceive(int connSock, client_req *request, run_params *rp);
+void doTcpSend(int connSock, client_req *request);

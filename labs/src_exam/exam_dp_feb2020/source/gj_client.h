@@ -13,9 +13,10 @@
 
 #include "sockwrap.h"
 #include "errlib.h"
+#include "gj_types.h"
 
 void setAddress(const char *ip, struct sockaddr_in *address);
 int connectTcpClient(const char *address, const char *port);
-void doClient(int connSock, const char *request);
-void clientSend(int connSock, const char *request);
-void clientReceive(int connSock, const char *request);
+void doClient(int connSock, cli_params *params);
+void clientSend(int connSock, cli_params *params, client_req *req);
+void clientReceive(int connSock, cli_params *params, client_req *req);

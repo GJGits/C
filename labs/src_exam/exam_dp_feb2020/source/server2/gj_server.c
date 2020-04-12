@@ -25,6 +25,35 @@ int startTcpServer(const char *port)
     return sockfd;
 }
 
+/*
+  SERVER CHE CREA PROCESSI SU RICHIESTA
+*/
+void runRichiestaTcpInstance(int passiveSock, run_params *rp)
+{
+    struct sockaddr_in cli_addr;
+    socklen_t addr_len = sizeof(struct sockaddr_in);
+
+    while (1)
+    {
+        printf("Server[accepting]: " ANSI_COLOR_YELLOW
+               "WAITING FOR A CONNECTION..." ANSI_COLOR_RESET "\n");
+        int connSock = Accept(passiveSock, (struct sockaddr *)&cli_addr, &addr_len);
+        printf("Server[accepting]: " ANSI_COLOR_CYAN "%s %d" ANSI_COLOR_RESET "\n", inet_ntoa(cli_addr.sin_addr), (int)cli_addr.sin_port);
+        int childpd;
+        if ((childpd = fork()) == 0)
+        {
+            printf("Server[forking]: " ANSI_COLOR_CYAN "CREATED A NEW PROCESS (%d)" ANSI_COLOR_RESET "\n", getpid());
+            close(passiveSock);
+            doTcpJob(connSock, rp);
+            printf("Server[forking]: " ANSI_COLOR_MAGENTA "KILLING PID (%d)" ANSI_COLOR_RESET "\n", getpid());
+            printf("Server[accepting]: " ANSI_COLOR_YELLOW "WAITING FOR A CONNECTION..." ANSI_COLOR_RESET "\n");
+            exit(0);
+        }
+
+        close(connSock);
+    }
+}
+
 void runIterativeTcpInstance(int passiveSock, run_params *rp)
 {
     struct sockaddr_in cli_addr;
