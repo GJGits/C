@@ -50,7 +50,8 @@ int connectTcpClient(const char *address, const char *char_port) {
     setAddress(address, &server_address);
     printf("Server[address]: " ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET "\n", address);
 
-    parsePort(char_port, &port);
+    if (parsePort(char_port, &port) == -1)
+        return -1;
     sockfd = Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);

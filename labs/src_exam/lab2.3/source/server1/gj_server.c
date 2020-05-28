@@ -55,6 +55,12 @@ void doTcpJob(int connSock)
         char err_buff[7] = "-ERR\r\n";
         send(connSock, err_buff, 6, 0);
     }
+    if (status == -2)
+    {
+        printf("Server[error]: " ANSI_COLOR_RED "INVALID REQUEST FROM CLIENT, FILE DO NOT EXISTS: %s" ANSI_COLOR_RESET "\n", request);
+        char err_buff[7] = "-ERR\r\n";
+        send(connSock, err_buff, 6, 0);
+    }
     if (status == 1)
     {
         printf("Server[error]: " ANSI_COLOR_RED "NO REQUESTS, EXIT FOR TIME-OUT" ANSI_COLOR_RESET "\n");
@@ -90,8 +96,9 @@ int doTcpReceive(int connSock, char *request)
         FD_CLR(connSock, &cset);
         FD_ZERO(&cset);
         FD_SET(connSock, &cset);
-        if (checkRequest(request) == 0)
-            return 0;
+        int stat = checkRequest(request);
+        if (stat == 0 || stat == -2)
+            return stat;
     }
     printf("Server[error]: " ANSI_COLOR_RED "EXIT FOR TIME-OUT" ANSI_COLOR_RESET "\n");
     return checkRequest(request); // exit for time-out
@@ -132,7 +139,10 @@ void doTcpSend(int connSock, char *request)
         ssize_t sent = 0;
         while (sent < f_size)
         {
-            sent += sendfile(connSock, fileno(fp), NULL, f_size);
+            ssize_t tsent = sendfile(connSock, fileno(fp), NULL, f_size);
+            sent += tsent;
+            if (tsent == -1)
+                return;
             showProgress((int)sent, (int)f_size, "Server[sending]: ");
             printf("\n");
         }
@@ -163,7 +173,7 @@ int checkRequest(char *request)
     {
         memcpy(request, request + 4, (len - 6)); // estraggo il nome del file dalla richiesta
         request[len - 6] = '\0';
-        return access(request, F_OK); // verifico che il file esista nella cartella di lavoro
+        return access(request, F_OK) * 2; // verifico che il file esista nella cartella di lavoro
     }
     return -1;
 }

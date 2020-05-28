@@ -4,16 +4,16 @@ server:
  - la porta non è un numero OK
  - la porta è fuori range OK
  - connessione client con nessuna richiesta OK
- - connessione client con richiesta formato non valido NO
- - connessione client con file richiesto non esistente
- - connessione client con richieste file di cui soltanto uno è inesistente
- - connessione interrotta lato client in qualsiasi momento 
+ - connessione client con richiesta formato non valido OK
+ - connessione client con file richiesto non esistente OK
+ - connessione client con richieste file di cui soltanto uno è inesistente OK
+ - connessione interrotta lato client in qualsiasi momento NO su send
 client:
- - avvio con più parametri del necessario
- - avvio con meno parametri del necessario
- - la porta non è un numero 
- - la porta è fuori range
- - la porta non è quella corretta
- - indirizzo non valido (stringa)
- - indirizzo inesistente
+ - avvio con più parametri del necessario NO possibile
+ - avvio con meno parametri del necessario OK
+ - la porta non è un numero  OK
+ - la porta è fuori range OK
+ - la porta non è quella corretta OK
+ - indirizzo non valido (stringa) OK
+ - indirizzo inesistente 
  - connessione interrotta lato client durante trasmissione
