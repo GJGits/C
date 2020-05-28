@@ -55,8 +55,7 @@ int connectTcpClient(const char *address, const char *char_port) {
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);
 
-    Connect(sockfd, (const struct sockaddr*) &server_address, sizeof(server_address));
-    return sockfd;
+    return connect(sockfd, (const struct sockaddr*) &server_address, sizeof(server_address)) == 0 ? sockfd : -1;
 
 }
 
@@ -64,7 +63,6 @@ int connectTcpClient(const char *address, const char *char_port) {
  * Singola interazione client server
  * */
 void doClient(int connSock, const char *request) {
-
         clientSend(connSock, request);
         clientReceive(connSock, request);
 }
@@ -76,7 +74,7 @@ void clientSend(int connSock, const char *request) {
     memset(richiesta, '\0', 4 + strlen(request) + 3);
     memcpy(richiesta, "GET ", 4);
     memcpy(richiesta + 4, request, strlen(request));
-    memcpy(richiesta + 4 + strlen(request), "\r\n", 2);
+    memcpy(richiesta + 4 + strlen(request), "\r\n", 2); 
    
     // 2. Invio richiesta
      Send(connSock, richiesta, (4 + strlen(request) + 2),  0);

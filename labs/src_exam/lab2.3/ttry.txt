@@ -1,0 +1,19 @@
+server:
+ - avvio con più parametri del necessario OK
+ - avvio con meno parametri del necessario OK
+ - la porta non è un numero OK
+ - la porta è fuori range OK
+ - connessione client con nessuna richiesta OK
+ - connessione client con richiesta formato non valido NO
+ - connessione client con file richiesto non esistente
+ - connessione client con richieste file di cui soltanto uno è inesistente
+ - connessione interrotta lato client in qualsiasi momento 
+client:
+ - avvio con più parametri del necessario
+ - avvio con meno parametri del necessario
+ - la porta non è un numero 
+ - la porta è fuori range
+ - la porta non è quella corretta
+ - indirizzo non valido (stringa)
+ - indirizzo inesistente
+ - connessione interrotta lato client durante trasmissione
